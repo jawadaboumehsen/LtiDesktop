@@ -1,0 +1,2 @@
+sed -i 's/import androidx.compose.material.icons.filled.\*/import androidx.compose.material.icons.filled.*\nimport androidx.compose.material.icons.automirrored.filled.*/g' composeApp/src/commonMain/kotlin/com/lti/ltidesktop/ui/components/FilesScreen.kt
+sed -i 's/import androidx.compose.material.icons.filled.\*/import androidx.compose.material.icons.filled.*\nimport androidx.compose.material.icons.automirrored.filled.*/g' composeApp/src/commonMain/kotlin/com/lti/ltidesktop/ui/components/widgets/DesignWidgets.kt

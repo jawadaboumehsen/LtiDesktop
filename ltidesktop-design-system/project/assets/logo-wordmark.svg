@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 32" fill="none">
+  <path d="M2,4 L6,4 L6,26 L2,26 Z" fill="#4776E6"></path>
+  <path d="M2,22 L14,22 L14,26 L2,26 Z" fill="#4776E6"></path>
+  <path d="M16,4 L30,4 L30,8 L16,8 Z" fill="#4776E6"></path>
+  <path d="M21,4 L25,4 L25,26 L21,26 Z" fill="#4776E6"></path>
+  <path d="M32,4 L42,4 L42,8 L32,8 Z" fill="#4776E6"></path>
+  <path d="M35,4 L39,4 L39,26 L35,26 Z" fill="#4776E6"></path>
+  <path d="M32,22 L42,22 L42,26 L32,26 Z" fill="#4776E6"></path>
+  <path d="M47,6 L47,26" fill="none" stroke="#4776E6" stroke-width="0.8" opacity="0.35"></path>
+  <path d="M51,4 L54,4 L54,26 L51,26 Z" fill="#BDBDBD"></path>
+  <path d="M51,4 L60,4 L60,7 L51,7 Z" fill="#BDBDBD"></path>
+  <path d="M57,4 L60,4 L60,15 L57,15 Z" fill="#BDBDBD"></path>
+  <path d="M51,12 L60,12 L60,15 L51,15 Z" fill="#BDBDBD"></path>
+  <path d="M63,26 L66,26 L72,4 L69,4 Z" fill="#BDBDBD"></path>
+  <path d="M72,4 L75,4 L80,26 L77,26 Z" fill="#BDBDBD"></path>
+  <path d="M65,15 L78,15 L78,18 L65,18 Z" fill="#BDBDBD"></path>
+  <path d="M82,4 L96,4 L96,8 L82,8 Z" fill="#BDBDBD"></path>
+  <path d="M87,4 L91,4 L91,26 L87,26 Z" fill="#BDBDBD"></path>
+  <path d="M98,4 L108,4 L108,8 L98,8 Z" fill="#BDBDBD"></path>
+  <path d="M98,4 L102,4 L102,26 L98,26 Z" fill="#BDBDBD"></path>
+  <path d="M98,22 L108,22 L108,26 L98,26 Z" fill="#BDBDBD"></path>
+  <path d="M110,4 L114,4 L114,26 L110,26 Z" fill="#BDBDBD"></path>
+  <path d="M122,4 L126,4 L126,26 L122,26 Z" fill="#BDBDBD"></path>
+  <path d="M110,13 L126,13 L126,17 L110,17 Z" fill="#BDBDBD"></path>
+  <path d="M128,4 L132,4 L132,26 L128,26 Z" fill="#BDBDBD"></path>
+  <path d="M128,4 L138,4 L138,8 L128,8 Z" fill="#BDBDBD"></path>
+  <path d="M128,13 L136,13 L136,17 L128,17 Z" fill="#BDBDBD"></path>
+  <path d="M128,22 L138,22 L138,26 L128,26 Z" fill="#BDBDBD"></path>
+  <path d="M140,4 L144,4 L144,26 L140,26 Z" fill="#BDBDBD"></path>
+  <path d="M140,4 L150,4 L150,8 L140,8 Z" fill="#BDBDBD"></path>
+  <path d="M147,4 L150,4 L150,15 L147,15 Z" fill="#BDBDBD"></path>
+  <path d="M140,12 L150,12 L150,15 L140,15 Z" fill="#BDBDBD"></path>
+  <path d="M146,15 L150,15 L154,26 L150,26 Z" fill="#BDBDBD"></path>
+</svg>

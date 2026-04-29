@@ -1,0 +1,227 @@
+/* ============================================================
+   LtiDesktop Design System — Colors & Type
+   Source: composeApp/src/commonMain/kotlin/com/lti/ltidesktop/ui/theme/
+   The runtime app is dark-default ("Antigravity"); a light variant exists.
+   ============================================================ */
+
+:root {
+  /* ---------- Surfaces (Dark / "Antigravity") ---------- */
+  --bg:                       #000000;  /* deep space black, root */
+  --surface:                  #0C0C0C;  /* very dark grey, primary panel */
+  --surface-container-lowest: #0C0C0C;
+  --surface-container:        #161616;
+  --surface-container-high:   #1E1E1E;
+  --surface-variant:          #161616;
+  --border:                   #262626;
+  --border-soft:              rgba(38, 38, 38, 0.5);
+
+  /* Sidebar / chrome */
+  --sidebar-bg:               #0C0C0C;
+  --sidebar-border:           #1A1A1A;
+  --sidebar-item-active:      #121212;
+
+  /* Terminal */
+  --terminal-bg:              #000000;
+  --terminal-header-bg:       #0A0A0A;
+  --terminal-input-bg:        #000000;
+
+  /* ---------- Text ---------- */
+  --fg:                       #FFFFFF;  /* pure white */
+  --fg-secondary:             #A1A1AA;  /* zinc 400 */
+  --fg-muted:                 rgba(161, 161, 170, 0.5);
+
+  /* ---------- Brand / Primary ---------- */
+  --primary:                  #00E5FF;  /* Antigravity neon cyan */
+  --primary-tint:             #00B3CC;
+  --primary-container:        #00333D;
+  --on-primary-container:     #E0FFFF;
+  --primary-glow-10:          rgba(0, 229, 255, 0.10);
+  --primary-glow-20:          rgba(0, 229, 255, 0.20);
+  --primary-glow-50:          rgba(0, 229, 255, 0.50);
+
+  /* Logo / wordmark accents (used in vector assets, distinct from runtime UI) */
+  --logo-blue:                #4776E6;  /* electric blue, "LTI" stroke */
+  --logo-grey:                #BDBDBD;  /* "PATCHER" stroke */
+  --logo-orange:              #F2994A;  /* circuit via-node accent */
+
+  /* ---------- Semantic ---------- */
+  --success:                  #00FFAA;  /* neon mint */
+  --warning:                  #FFD600;  /* neon yellow */
+  --error:                    #FF3366;  /* neon red/pink */
+  --info:                     #00E5FF;  /* same as primary */
+
+  --success-bg:               rgba(0, 255, 170, 0.10);
+  --warning-bg:               rgba(255, 214, 0, 0.10);
+  --error-bg:                 rgba(255, 51, 102, 0.10);
+  --info-bg:                  rgba(0, 229, 255, 0.10);
+
+  /* ---------- Terminal command-stream colors ---------- */
+  --cmd-prompt:               #00FFAA;
+  --cmd-error:                #FF3366;
+  --cmd-sys:                  #00E5FF;
+  --cmd-warn:                 #FFD600;
+  --cmd-normal:               #E4E4E7;
+
+  /* ============================================================
+     Type — JetBrains Mono (display + mono) and Inter (UI)
+     The Compose source uses FontFamily.SansSerif / Monospace
+     (system defaults). We substitute Inter + JetBrains Mono as
+     the closest free webfont equivalents. FLAG TO USER.
+     ============================================================ */
+  --font-sans: "Inter", "SF Pro Text", -apple-system, BlinkMacSystemFont,
+               "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", "Cascadia Code", Menlo,
+               Consolas, monospace;
+
+  /* ---------- Type tokens (from Type.kt) ---------- */
+  /* display-lg : 20 / 28 / 700, tracking -0.4 */
+  --t-display-size: 20px;
+  --t-display-line: 28px;
+  --t-display-weight: 700;
+  --t-display-track: -0.02em;
+
+  /* headline-md : 16 / 24 / 600, tracking -0.16 */
+  --t-headline-size: 16px;
+  --t-headline-line: 24px;
+  --t-headline-weight: 600;
+  --t-headline-track: -0.01em;
+
+  /* title-sm : 14 / 20 / 600 */
+  --t-title-size: 14px;
+  --t-title-line: 20px;
+  --t-title-weight: 600;
+
+  /* body-base : 13 / 18 / 400 */
+  --t-body-size: 13px;
+  --t-body-line: 18px;
+  --t-body-weight: 400;
+
+  /* body-sm : 12 / 16 / 400 */
+  --t-body-sm-size: 12px;
+  --t-body-sm-line: 16px;
+
+  /* label-uppercase : 11 / 14 / 600, tracking +0.5 */
+  --t-label-size: 11px;
+  --t-label-line: 14px;
+  --t-label-weight: 600;
+  --t-label-track: 0.045em;
+
+  /* terminal : 13 / 20 / 500 mono */
+  --t-term-size: 13px;
+  --t-term-line: 20px;
+  --t-term-weight: 500;
+
+  /* ---------- Spacing (4-pt grid; observed values) ---------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ---------- Radii (NexusShapes — minimal) ---------- */
+  --radius-none: 0px;
+  --radius-sm:   2px;
+  --radius-md:   4px;     /* the dominant corner — pretty much everything */
+  --radius-lg:   4px;     /* same as md by design; sharp aesthetic */
+  --radius-pill: 9999px;
+
+  /* ---------- Shadows ----------
+     Compose uses `Modifier.shadow(elevation = 24.dp, spotColor = black/0.5)`
+     for the connect modal. Otherwise the system relies on borders + tonal
+     surfaces, NOT drop shadows — flat dark UI. */
+  --shadow-modal: 0 24px 48px -12px rgba(0, 0, 0, 0.50),
+                  0 0 0 1px rgba(0, 0, 0, 0.40);
+  --shadow-glow:  0 0 0 1px var(--primary-glow-50),
+                  0 0 16px var(--primary-glow-20);
+  --shadow-none:  none;
+
+  /* ---------- Motion ---------- */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.3, 0, 0, 1);
+  --dur-fast: 150ms;
+  --dur-normal: 300ms;
+  --dur-slow: 500ms;
+}
+
+/* ============================================================
+   Light theme (kept dark sidebar/terminal — see Colors.kt).
+   Apply via `[data-theme="light"]` on a root element.
+   ============================================================ */
+[data-theme="light"] {
+  --bg:                       #FAFAFA;
+  --surface:                  #FFFFFF;
+  --surface-container-lowest: #FFFFFF;
+  --surface-container:        #F4F4F5;
+  --surface-container-high:   #E4E4E7;
+  --surface-variant:          #F4F4F5;
+  --border:                   #E4E4E7;
+  --border-soft:              rgba(228, 228, 231, 0.5);
+
+  --fg:                       #09090B;
+  --fg-secondary:             #71717A;
+  --fg-muted:                 rgba(113, 113, 122, 0.5);
+
+  --primary:                  #00A3C4;   /* deeper cyan for contrast */
+  --primary-tint:             #00A3C4;
+  --primary-container:        #CCF6FF;
+  --on-primary-container:     #003D4A;
+
+  --success: #059669;
+  --warning: #D97706;
+  --error:   #DC2626;
+  --info:    #0284C7;
+
+  /* Sidebar + Terminal stay dark per source (intentional pro look) */
+}
+
+/* ============================================================
+   Semantic typography classes
+   ============================================================ */
+body, .body { font-family: var(--font-sans); color: var(--fg); }
+
+.t-display, h1.lti-h1 {
+  font-size: var(--t-display-size);
+  line-height: var(--t-display-line);
+  font-weight: var(--t-display-weight);
+  letter-spacing: var(--t-display-track);
+}
+.t-headline, h2.lti-h2 {
+  font-size: var(--t-headline-size);
+  line-height: var(--t-headline-line);
+  font-weight: var(--t-headline-weight);
+  letter-spacing: var(--t-headline-track);
+}
+.t-title, h3.lti-h3 {
+  font-size: var(--t-title-size);
+  line-height: var(--t-title-line);
+  font-weight: var(--t-title-weight);
+}
+.t-body, p.lti-body {
+  font-size: var(--t-body-size);
+  line-height: var(--t-body-line);
+  font-weight: var(--t-body-weight);
+}
+.t-body-sm {
+  font-size: var(--t-body-sm-size);
+  line-height: var(--t-body-sm-line);
+  font-weight: 400;
+}
+.t-label {
+  font-size: var(--t-label-size);
+  line-height: var(--t-label-line);
+  font-weight: var(--t-label-weight);
+  letter-spacing: var(--t-label-track);
+  text-transform: uppercase;
+  color: var(--fg-secondary);
+}
+.t-term, code.lti-term, pre.lti-term {
+  font-family: var(--font-mono);
+  font-size: var(--t-term-size);
+  line-height: var(--t-term-line);
+  font-weight: var(--t-term-weight);
+}

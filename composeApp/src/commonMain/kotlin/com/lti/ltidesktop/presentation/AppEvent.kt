@@ -5,6 +5,7 @@ sealed interface AppEvent {
     object ToggleSidebar : AppEvent
     data class UpdateHost(val host: String) : AppEvent
     data class UpdatePort(val port: String) : AppEvent
+    data class UpdateUser(val user: String) : AppEvent
     object Connect : AppEvent
     object Disconnect : AppEvent
     data class SendCommand(val input: String) : AppEvent
@@ -20,4 +21,10 @@ sealed interface AppEvent {
     data class UpdateOpacity(val opacity: Float) : AppEvent
     data class UpdateLanguage(val language: String) : AppEvent
     object SaveSettings : AppEvent
+
+    // File & Action Hub Events
+    data class SelectFile(val id: String?) : AppEvent
+    object SyncFiles : AppEvent
+    data class DeleteFile(val id: String) : AppEvent
+    data class ExecuteAction(val actionKey: String) : AppEvent
 }

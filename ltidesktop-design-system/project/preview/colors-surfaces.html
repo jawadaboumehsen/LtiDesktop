@@ -1,0 +1,22 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-sans);height:100%}
+  .wrap{padding:16px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .sw{display:flex;flex-direction:column;border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;background:var(--surface-container-lowest)}
+  .chip{height:60px}
+  .meta{padding:6px 10px;display:flex;justify-content:space-between;align-items:baseline;gap:6px}
+  .name{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--fg)}
+  .hex{font-family:var(--font-mono);font-size:10px;color:var(--fg-secondary)}
+</style></head><body>
+<div class="wrap">
+  <div class="sw"><div class="chip" style="background:#000"></div><div class="meta"><span class="name">bg</span><span class="hex">#000000</span></div></div>
+  <div class="sw"><div class="chip" style="background:#0C0C0C"></div><div class="meta"><span class="name">surface</span><span class="hex">#0C0C0C</span></div></div>
+  <div class="sw"><div class="chip" style="background:#161616"></div><div class="meta"><span class="name">container</span><span class="hex">#161616</span></div></div>
+  <div class="sw"><div class="chip" style="background:#1E1E1E"></div><div class="meta"><span class="name">container-high</span><span class="hex">#1E1E1E</span></div></div>
+  <div class="sw"><div class="chip" style="background:#262626"></div><div class="meta"><span class="name">border</span><span class="hex">#262626</span></div></div>
+  <div class="sw"><div class="chip" style="background:#0A0A0A"></div><div class="meta"><span class="name">term-header</span><span class="hex">#0A0A0A</span></div></div>
+  <div class="sw"><div class="chip" style="background:#121212"></div><div class="meta"><span class="name">nav-active</span><span class="hex">#121212</span></div></div>
+  <div class="sw"><div class="chip" style="background:#1A1A1A"></div><div class="meta"><span class="name">sidebar-border</span><span class="hex">#1A1A1A</span></div></div>
+</div>
+</body></html>

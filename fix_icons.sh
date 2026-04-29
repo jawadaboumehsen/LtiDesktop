@@ -1,0 +1,4 @@
+sed -i 's/import androidx.compose.material.icons.filled.InsertDriveFile/import androidx.compose.material.icons.automirrored.filled.InsertDriveFile/g' composeApp/src/commonMain/kotlin/com/lti/ltidesktop/ui/components/FilesScreen.kt
+sed -i 's/Icons.Default.InsertDriveFile/Icons.AutoMirrored.Filled.InsertDriveFile/g' composeApp/src/commonMain/kotlin/com/lti/ltidesktop/ui/components/FilesScreen.kt
+sed -i 's/import androidx.compose.material.icons.filled.InsertDriveFile/import androidx.compose.material.icons.automirrored.filled.InsertDriveFile/g' composeApp/src/commonMain/kotlin/com/lti/ltidesktop/ui/components/widgets/DesignWidgets.kt
+sed -i 's/Icons.Default.InsertDriveFile/Icons.AutoMirrored.Filled.InsertDriveFile/g' composeApp/src/commonMain/kotlin/com/lti/ltidesktop/ui/components/widgets/DesignWidgets.kt

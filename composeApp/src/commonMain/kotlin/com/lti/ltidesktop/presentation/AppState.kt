@@ -5,9 +5,29 @@ import com.lti.ltidesktop.network.ConnectionState
 
 enum class Screen {
     HOME,
-    CLI,
+    DASHBOARD,
+    FILES,
+    CONSOLE,
     SETTINGS
 }
+
+data class DumpFile(
+    val id: String,
+    val name: String,
+    val ext: String,
+    val size: String,
+    val time: String,
+    val path: String,
+    val content: String
+)
+
+data class ActionLog(
+    val id: String,
+    val title: String,
+    val meta: String,
+    val time: String,
+    val tone: String // success, info, warn, error
+)
 
 data class SettingsState(
     val autoConnect: Boolean = false,
@@ -21,11 +41,17 @@ data class SettingsState(
 data class AppState(
     val currentScreen: Screen = Screen.HOME,
     val isSidebarExpanded: Boolean = true,
-    val host: String = "",
-    val port: String = "",
+    val host: String = "192.168.1.42",
+    val port: String = "22",
+    val user: String = "root",
     val connectionState: ConnectionState = ConnectionState.DISCONNECTED,
     val outputLines: List<OutputLine> = emptyList(),
     val isConnecting: Boolean = false,
     val errorMessage: String? = null,
-    val settings: SettingsState = SettingsState()
+    val settings: SettingsState = SettingsState(),
+
+    // Design System Screen States
+    val files: List<DumpFile> = emptyList(),
+    val selectedFileId: String? = null,
+    val recentActions: List<ActionLog> = emptyList()
 )

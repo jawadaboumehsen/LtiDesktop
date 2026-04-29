@@ -48,7 +48,19 @@ fun App(
                                 true
                             }
                             Key.Two -> {
-                                vm.onEvent(AppEvent.NavigateTo(Screen.CLI))
+                                vm.onEvent(AppEvent.NavigateTo(Screen.DASHBOARD))
+                                true
+                            }
+                            Key.Three -> {
+                                vm.onEvent(AppEvent.NavigateTo(Screen.FILES))
+                                true
+                            }
+                            Key.Four -> {
+                                vm.onEvent(AppEvent.NavigateTo(Screen.CONSOLE))
+                                true
+                            }
+                            Key.Five -> {
+                                vm.onEvent(AppEvent.NavigateTo(Screen.SETTINGS))
                                 true
                             }
                             Key.Comma -> {
@@ -79,7 +91,9 @@ fun App(
                         ) { screen ->
                             when (screen) {
                                 Screen.HOME -> HomeScreen(state, vm::onEvent)
-                                Screen.CLI -> ConsoleScreen(state, vm.effect, vm::onEvent)
+                                Screen.DASHBOARD -> DashboardScreen(state, vm::onEvent)
+                                Screen.FILES -> FilesScreen(state, vm::onEvent)
+                                Screen.CONSOLE -> ConsoleScreen(state, vm.effect, vm::onEvent)
                                 Screen.SETTINGS -> SettingsScreen(state, vm::onEvent)
                             }
                         }

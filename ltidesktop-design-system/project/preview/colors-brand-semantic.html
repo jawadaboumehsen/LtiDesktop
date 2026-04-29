@@ -1,0 +1,23 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:#000;color:var(--fg);font-family:var(--font-sans);height:100%}
+  .wrap{padding:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .sw{border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;background:var(--surface)}
+  .chip{height:64px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:12px;font-weight:600;color:#000}
+  .meta{padding:8px 10px;display:flex;flex-direction:column;gap:2px}
+  .name{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+  .hex{font-family:var(--font-mono);font-size:10px;color:var(--fg-secondary)}
+  .lbl{display:flex;justify-content:space-between;align-items:baseline}
+  .glow{box-shadow:0 0 24px rgba(0,229,255,.45)}
+</style></head><body>
+<div class="wrap">
+  <div class="sw"><div class="chip glow" style="background:#00E5FF">primary</div><div class="meta"><span class="lbl"><span class="name">primary / cyan</span><span class="hex">#00E5FF</span></span><span class="hex" style="color:var(--fg-secondary)">interactive intent</span></div></div>
+  <div class="sw"><div class="chip" style="background:#00B3CC">tint</div><div class="meta"><span class="lbl"><span class="name">primary tint</span><span class="hex">#00B3CC</span></span></div></div>
+  <div class="sw"><div class="chip" style="background:#00333D;color:#E0FFFF">container</div><div class="meta"><span class="lbl"><span class="name">primary container</span><span class="hex">#00333D</span></span></div></div>
+
+  <div class="sw"><div class="chip" style="background:#00FFAA">success</div><div class="meta"><span class="lbl"><span class="name">success / mint</span><span class="hex">#00FFAA</span></span></div></div>
+  <div class="sw"><div class="chip" style="background:#FFD600">warning</div><div class="meta"><span class="lbl"><span class="name">warning</span><span class="hex">#FFD600</span></span></div></div>
+  <div class="sw"><div class="chip" style="background:#FF3366;color:#fff">error</div><div class="meta"><span class="lbl"><span class="name">error</span><span class="hex">#FF3366</span></span></div></div>
+</div>
+</body></html>

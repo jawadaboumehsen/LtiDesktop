@@ -1,0 +1,31 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:#000;color:var(--fg);font-family:var(--font-sans);height:100%}
+  .wrap{padding:0 0;display:flex;flex-direction:column}
+  .row{display:flex;align-items:center;gap:12px;padding:8px 16px;border-bottom:1px solid rgba(38,38,38,.5);font-size:12px}
+  .ico{width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .ico svg{width:12px;height:12px;fill:none;stroke-width:2}
+  .text{flex:1;color:var(--fg)}
+  .text .meta{color:var(--fg-secondary)}
+  .time{color:var(--fg-secondary);font-size:11px}
+  b{font-weight:600}
+</style></head><body>
+<div class="wrap">
+  <div class="row">
+    <div class="ico" style="background:rgba(0,255,170,.10)"><svg viewBox="0 0 24 24" stroke="#00FFAA"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg></div>
+    <div class="text"><b>Admin User</b> authenticated successfully via SSH. <span class="meta">IP: 192.168.1.104 • Node: Alpha-01</span></div>
+    <span class="time">2 mins ago</span>
+  </div>
+  <div class="row">
+    <div class="ico" style="background:rgba(0,229,255,.10)"><svg viewBox="0 0 24 24" stroke="#00E5FF"><path d="M17.5 19a4.5 4.5 0 1 0-1.5-8.74 7 7 0 0 0-13.4 1.74M9 18l3 3 3-3M12 13v8"/></svg></div>
+    <div class="text">System backup initiated automatically. <span class="meta">Target: /mnt/backup/daily • Size: 4.2GB</span></div>
+    <span class="time">45 mins ago</span>
+  </div>
+  <div class="row">
+    <div class="ico" style="background:rgba(255,214,0,.10)"><svg viewBox="0 0 24 24" stroke="#FFD600"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01"/></svg></div>
+    <div class="text">High memory usage detected on worker node. <span class="meta">Node: Beta-03 • Usage: 94%</span></div>
+    <span class="time">2 hours ago</span>
+  </div>
+</div>
+</body></html>

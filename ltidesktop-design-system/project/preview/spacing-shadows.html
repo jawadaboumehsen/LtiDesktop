@@ -1,0 +1,20 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:#000;color:var(--fg);font-family:var(--font-sans);height:100%}
+  .wrap{padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:center}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:4px;height:100px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:11px;color:var(--fg-secondary)}
+  .modal{box-shadow:var(--shadow-modal)}
+  .lbl{font-family:var(--font-mono);font-size:10px;color:var(--fg-secondary);margin-top:8px;text-align:center}
+</style></head><body>
+<div class="wrap">
+  <div>
+    <div class="card">flat (default — no shadow)</div>
+    <div class="lbl">cards / panels: tonal step + 1dp border only</div>
+  </div>
+  <div>
+    <div class="card modal">elevated modal</div>
+    <div class="lbl">shadow elev=24dp, spotColor black/0.5α</div>
+  </div>
+</div>
+</body></html>

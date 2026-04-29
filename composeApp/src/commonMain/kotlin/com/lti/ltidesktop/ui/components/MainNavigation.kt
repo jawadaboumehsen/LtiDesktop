@@ -11,13 +11,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.automirrored.filled.MenuOpen
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material.icons.filled.WifiTethering
 import androidx.compose.material3.*
+import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,8 +49,8 @@ fun MainNavigation(
     onEvent: (AppEvent) -> Unit,
     content: @Composable () -> Unit
 ) {
-    var expandedWidth by remember { mutableStateOf(260.dp) }
-    val sidebarWidth by animateDpAsState(targetValue = if (isExpanded) expandedWidth else 80.dp)
+    var expandedWidth by remember { mutableStateOf(240.dp) }
+    val sidebarWidth by animateDpAsState(targetValue = if (isExpanded) expandedWidth else 64.dp)
     val density = LocalDensity.current
 
     Row(modifier = Modifier.fillMaxSize()) {
@@ -71,24 +74,24 @@ fun MainNavigation(
                 if (isExpanded) {
                     Icon(
                         imageVector = WordmarkLtipatcher,
-                        contentDescription = "LtiPatcher Wordmark",
+                        contentDescription = "LtiPatcher",
                         tint = Color.Unspecified,
                         modifier = Modifier
-                            .height(32.dp)
+                            .height(28.dp)
                             .clickable { onEvent(AppEvent.ToggleSidebar) }
                     )
                 } else {
                     Box(
                         modifier = Modifier
                             .size(40.dp)
-                            .clip(LtiTheme.shapes.medium)
+                            .clip(RoundedCornerShape(4.dp))
                             .background(LtiTheme.colors.primary.copy(alpha = 0.1f))
                             .clickable { onEvent(AppEvent.ToggleSidebar) },
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = LtiPatcherIcon,
-                            contentDescription = "LtiPatcher Icon",
+                            contentDescription = null,
                             tint = Color.Unspecified,
                             modifier = Modifier.size(24.dp)
                         )
@@ -99,7 +102,7 @@ fun MainNavigation(
             HorizontalDivider(
                 modifier = Modifier.padding(horizontal = if (isExpanded) 20.dp else 12.dp),
                 thickness = 1.dp,
-                color = LtiTheme.colors.sidebarBorder.copy(alpha = 0.3f)
+                color = LtiTheme.colors.sidebarBorder.copy(alpha = 0.8f)
             )
 
             // Navigation Items
@@ -110,18 +113,32 @@ fun MainNavigation(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 NavigationItem(
-                    label = "Dashboard",
-                    icon = Icons.Default.GridView,
+                    label = "Home",
+                    icon = Icons.Default.Home,
                     selected = currentScreen == Screen.HOME,
                     isExpanded = isExpanded,
                     onClick = { onEvent(AppEvent.NavigateTo(Screen.HOME)) }
                 )
                 NavigationItem(
+                    label = "Dashboard",
+                    icon = Icons.Default.GridView,
+                    selected = currentScreen == Screen.DASHBOARD,
+                    isExpanded = isExpanded,
+                    onClick = { onEvent(AppEvent.NavigateTo(Screen.DASHBOARD)) }
+                )
+                NavigationItem(
+                    label = "Files",
+                    icon = Icons.Default.Folder,
+                    selected = currentScreen == Screen.FILES,
+                    isExpanded = isExpanded,
+                    onClick = { onEvent(AppEvent.NavigateTo(Screen.FILES)) }
+                )
+                NavigationItem(
                     label = "Remote Console",
                     icon = Icons.Default.Terminal,
-                    selected = currentScreen == Screen.CLI,
+                    selected = currentScreen == Screen.CONSOLE,
                     isExpanded = isExpanded,
-                    onClick = { onEvent(AppEvent.NavigateTo(Screen.CLI)) }
+                    onClick = { onEvent(AppEvent.NavigateTo(Screen.CONSOLE)) }
                 )
                 NavigationItem(
                     label = "System Settings",
@@ -198,8 +215,10 @@ fun MainNavigation(
             ) {
                 Text(
                     text = when(currentScreen) {
-                        Screen.HOME -> "System Overview"
-                        Screen.CLI -> "Remote Terminal Session"
+                        Screen.HOME -> "Action Hub"
+                        Screen.DASHBOARD -> "System Dashboard"
+                        Screen.FILES -> "Dump File Manager"
+                        Screen.CONSOLE -> "Remote Terminal Session"
                         Screen.SETTINGS -> "Console Configuration"
                     },
                     color = LtiTheme.colors.textPrimary,
@@ -235,7 +254,7 @@ fun MainNavigation(
                         Spacer(modifier = Modifier.width(8.dp))
                         
                         TooltipBox(
-                            positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                            positionProvider = TooltipDefaults.rememberTooltipPositionProvider(positioning = TooltipAnchorPosition.Above),
                             tooltip = { PlainTooltip { Text("Network Configuration") } },
                             state = rememberTooltipState()
                         ) {
@@ -252,7 +271,7 @@ fun MainNavigation(
                         }
                         
                         TooltipBox(
-                            positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                            positionProvider = TooltipDefaults.rememberTooltipPositionProvider(positioning = TooltipAnchorPosition.Above),
                             tooltip = { PlainTooltip { Text("Alerts & Notifications") } },
                             state = rememberTooltipState()
                         ) {
@@ -304,16 +323,17 @@ private fun NavigationItem(
 ) {
     var isHovered by remember { mutableStateOf(false) }
     val backgroundColor = if (selected) LtiTheme.colors.sidebarItemActive 
-                          else if (isHovered) LtiTheme.colors.surfaceVariant.copy(alpha = 0.5f) 
+                          else if (isHovered) Color(0xFF161616).copy(alpha = 0.5f)
                           else Color.Transparent
-    val contentColor = if (selected) LtiTheme.colors.textPrimary else LtiTheme.colors.textSecondary
+    val contentColor = if (selected) Color.White else (if (isHovered) Color.White else LtiTheme.colors.textSecondary)
     val indicatorColor = if (selected) LtiTheme.colors.primary else Color.Transparent
 
-    Row(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp) // mx-2
-            .clip(LtiTheme.shapes.medium)
+            .padding(horizontal = 8.dp)
+            .height(40.dp)
+            .clip(RoundedCornerShape(4.dp))
             .background(backgroundColor)
             .pointerInput(Unit) {
                 awaitPointerEventScope {
@@ -327,38 +347,45 @@ private fun NavigationItem(
                 }
             }
             .clickable { onClick() }
-            .padding(horizontal = if(isExpanded) 12.dp else 0.dp, vertical = 8.dp), // px-3 py-2
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = if (isExpanded) Arrangement.Start else Arrangement.Center
     ) {
         if (isExpanded && selected) {
-            // Left Indicator
+            // Active Indicator Pill (aligned to the very left edge of the sidebar panel)
             Box(
                 modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .offset(x = (-8).dp) // Adjust to sit at the edge of the sidebar panel
                     .width(3.dp)
                     .height(20.dp)
                     .clip(RoundedCornerShape(2.dp))
                     .background(indicatorColor)
-                    .offset(x = (-16).dp) // Move border left edge
             )
         }
         
-        Icon(
-            imageVector = icon,
-            contentDescription = label,
-            tint = if (selected) LtiTheme.colors.info else contentColor,
-            modifier = Modifier.size(20.dp).offset(x = if (isExpanded && selected) (-16).dp else 0.dp)
-        )
-        
-        if (isExpanded) {
-            Spacer(Modifier.width(12.dp).offset(x = if (selected) (-16).dp else 0.dp))
-            
-            Text(
-                text = label,
-                color = contentColor,
-                style = LtiTheme.typography.bodyMedium.copy(fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal),
-                modifier = Modifier.offset(x = if (selected) (-16).dp else 0.dp)
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = if (isExpanded) 12.dp else 0.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = if (isExpanded) Arrangement.Start else Arrangement.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                tint = if (selected) LtiTheme.colors.primary else contentColor,
+                modifier = Modifier.size(20.dp)
             )
+
+            if (isExpanded) {
+                Spacer(Modifier.width(12.dp))
+
+                Text(
+                    text = label,
+                    color = contentColor,
+                    style = LtiTheme.typography.bodyMedium.copy(
+                        fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal
+                    )
+                )
+            }
         }
     }
 }

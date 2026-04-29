@@ -1,0 +1,18 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:#000;color:var(--fg);font-family:var(--font-sans);height:100%;display:flex;align-items:center;justify-content:center;gap:48px}
+  .group{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .lbl{font-family:var(--font-mono);font-size:10px;color:var(--fg-secondary)}
+  .sw{position:relative;width:36px;height:20px;border-radius:10px;background:#262626;transition:.2s}
+  .sw.on{background:#00E5FF}
+  .sw .knob{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:8px;background:#A1A1AA;transition:.2s}
+  .sw.on .knob{left:18px;background:#fff}
+  .slider{width:160px;height:4px;background:#262626;border-radius:2px;position:relative}
+  .slider .fill{position:absolute;top:0;left:0;width:55%;height:100%;background:#00E5FF;border-radius:2px}
+  .slider .thumb{position:absolute;top:50%;left:55%;width:14px;height:14px;background:#00E5FF;border-radius:7px;transform:translate(-50%,-50%)}
+</style></head><body>
+  <div class="group"><div class="sw on"><div class="knob"></div></div><span class="lbl">on</span></div>
+  <div class="group"><div class="sw"><div class="knob"></div></div><span class="lbl">off</span></div>
+  <div class="group"><div class="slider"><div class="fill"></div><div class="thumb"></div></div><span class="lbl">font size · 16px</span></div>
+</body></html>

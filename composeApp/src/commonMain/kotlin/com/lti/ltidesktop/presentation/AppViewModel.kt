@@ -57,6 +57,7 @@ class AppViewModel(
             }
             is AppEvent.UpdateHost -> updateHost(event.host)
             is AppEvent.UpdatePort -> updatePort(event.port)
+            is AppEvent.UpdateUser -> _state.update { it.copy(user = event.user) }
             AppEvent.Connect -> connect()
             AppEvent.Disconnect -> disconnect()
             is AppEvent.SendCommand -> sendCommand(event.input)
@@ -72,8 +73,81 @@ class AppViewModel(
             is AppEvent.UpdateOpacity -> updateSettings { it.copy(opacity = event.opacity) }
             is AppEvent.UpdateLanguage -> updateSettings { it.copy(language = event.language) }
             AppEvent.SaveSettings -> saveSettings()
+
+            // File & Action Hub Events
+            is AppEvent.SelectFile -> {
+                _state.update { it.copy(selectedFileId = event.id) }
+            }
+            AppEvent.SyncFiles -> syncFiles()
+            is AppEvent.DeleteFile -> {
+                _state.update { s -> s.copy(files = s.files.filter { it.id != event.id }, selectedFileId = if (s.selectedFileId == event.id) null else s.selectedFileId) }
+            }
+            is AppEvent.ExecuteAction -> executeAction(event.actionKey)
         }
     }
+
+    private fun syncFiles() {
+        val stamp = (1000..9999).random()
+        val newFile = DumpFile(
+            id = "sync_$stamp",
+            name = "sync_$stamp.txt",
+            ext = "txt",
+            size = "${(10..90).random()} KB",
+            time = "just now",
+            path = "/var/log/sync_$stamp.txt",
+            content = "[INFO] sync started\n[OK]   12 files transferred\n[OK]   sync complete · $stamp\n"
+        )
+        _state.update { it.copy(files = listOf(newFile) + it.files) }
+
+        val newAction = ActionLog(
+            id = "action_${newFile.id}",
+            title = "Logs synced",
+            meta = "12 files · ${newFile.size}",
+            time = "just now",
+            tone = "info"
+        )
+        _state.update { it.copy(recentActions = listOf(newAction) + it.recentActions) }
+    }
+
+    private fun executeAction(key: String) {
+        viewModelScope.launch {
+            // Simulate processing delay
+            val stamp = (1000..9999).random()
+
+            val (title, meta, tone, ext) = when(key) {
+                "dump" -> Quadruple("Dump pulled", "system.hpp · 2.4 MB", "success", "hpp")
+                "memdump" -> Quadruple("Memory captured", "mem_snapshot_$stamp.hpp", "success", "hpp")
+                "diag" -> Quadruple("Diagnostics passed", "all checks ok", "success", "txt")
+                "reboot" -> Quadruple("Host Rebooted", "cold restart complete", "warn", "txt")
+                else -> Quadruple("Action executed", "completed successfully", "info", "txt")
+            }
+
+            val newFile = DumpFile(
+                id = "f_$stamp",
+                name = if (ext == "hpp") "system_dump_$stamp.hpp" else "trace_$stamp.txt",
+                ext = ext,
+                size = "${(1..4).random()}.${(0..9).random()} MB",
+                time = "just now",
+                path = "/var/dumps/${if (ext == "hpp") "system_dump" else "trace"}_$stamp.$ext",
+                content = "// Captured ${key.uppercase()}\n// ID: $stamp\n#include <cstdint>\n\nnamespace lti::dump {\n  // capture logic for $key\n}\n"
+            )
+
+            val newAction = ActionLog(
+                id = "log_$stamp",
+                title = title,
+                meta = meta,
+                time = "just now",
+                tone = tone
+            )
+
+            _state.update { it.copy(
+                files = listOf(newFile) + it.files,
+                recentActions = listOf(newAction) + it.recentActions
+            ) }
+        }
+    }
+
+    private data class Quadruple<A, B, C, D>(val first: A, val second: B, val third: C, val fourth: D)
 
     private fun updateSettings(update: (SettingsState) -> SettingsState) {
         _state.update { it.copy(settings = update(it.settings)) }

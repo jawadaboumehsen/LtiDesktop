@@ -9,7 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Computer
 import androidx.compose.material.icons.filled.Dns
-import androidx.compose.material.icons.filled.Power
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,14 +17,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lti.ltidesktop.network.ConnectionState
 import com.lti.ltidesktop.presentation.AppState
 import com.lti.ltidesktop.presentation.AppEvent
 import com.lti.ltidesktop.ui.theme.LtiTheme
-
-import androidx.compose.ui.draw.shadow
 
 @Composable
 fun ConnectScreen(
@@ -36,75 +35,91 @@ fun ConnectScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(LtiTheme.colors.background),
+            .background(Color(0xFF0A0A0A)), // Exact background from Connect.jsx
         contentAlignment = Alignment.Center
     ) {
         Column(
             modifier = Modifier
-                .width(440.dp)
-                .shadow(elevation = 24.dp, shape = LtiTheme.shapes.medium, spotColor = Color.Black.copy(alpha = 0.5f))
-                .background(LtiTheme.colors.surface, LtiTheme.shapes.medium)
-                .border(1.dp, LtiTheme.colors.border, LtiTheme.shapes.medium)
+                .width(400.dp) // Match 400 width from Connect.jsx
                 .padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(32.dp)
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             // Header
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.padding(bottom = 16.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(64.dp)
-                        .background(LtiTheme.colors.surfaceVariant, LtiTheme.shapes.medium)
-                        .border(1.dp, LtiTheme.colors.border, LtiTheme.shapes.medium),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Dns,
-                        contentDescription = null,
-                        tint = LtiTheme.colors.primary,
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
+                // Logo Placeholder (would be logo-mark.svg)
+                Icon(
+                    imageVector = Icons.Default.Dns,
+                    contentDescription = null,
+                    tint = LtiTheme.colors.primary,
+                    modifier = Modifier.size(40.dp)
+                )
                 
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "System Console",
-                        color = LtiTheme.colors.textPrimary,
-                        style = LtiTheme.typography.displayLarge
-                    )
-                    Text(
-                        text = "Establish a secure connection to the host server to continue.",
-                        color = LtiTheme.colors.textSecondary,
-                        style = LtiTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(top = 4.dp),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                    )
-                }
+                Text(
+                    text = "Connect to Console",
+                    color = Color.White,
+                    style = LtiTheme.typography.displayLarge.copy(fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                )
+                Text(
+                    text = "Enter your remote host details",
+                    color = LtiTheme.colors.textSecondary,
+                    style = LtiTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                    textAlign = TextAlign.Center
+                )
             }
 
             // Connection Form
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 ConnectTextField(
                     value = state.host,
                     onValueChange = { onEvent(AppEvent.UpdateHost(it)) },
-                    label = "Server IP Address",
-                    placeholder = "e.g., 192.168.1.100",
-                    icon = Icons.Default.Computer,
+                    label = "Host",
+                    placeholder = "hostname or IP",
+                    icon = Icons.Default.Dns,
                     enabled = !isConnecting
                 )
-                ConnectTextField(
-                    value = state.port,
-                    onValueChange = { onEvent(AppEvent.UpdatePort(it)) },
-                    label = "Port Number",
-                    placeholder = "e.g., 8080",
-                    icon = Icons.Default.Power,
-                    enabled = !isConnecting
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Box(modifier = Modifier.weight(1f)) {
+                        ConnectTextField(
+                            value = state.port,
+                            onValueChange = { onEvent(AppEvent.UpdatePort(it)) },
+                            label = "Port",
+                            placeholder = "22",
+                            icon = null,
+                            enabled = !isConnecting
+                        )
+                    }
+                    Box(modifier = Modifier.weight(2f)) {
+                        ConnectTextField(
+                            value = state.user,
+                            onValueChange = { onEvent(AppEvent.UpdateUser(it)) },
+                            label = "User",
+                            placeholder = "root",
+                            icon = null,
+                            enabled = !isConnecting
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                DesktopButton(
+                    text = if (isConnecting) "CONNECTING…" else "CONNECT",
+                    onClick = { onEvent(AppEvent.Connect) },
+                    modifier = Modifier.fillMaxWidth().height(36.dp),
+                    icon = if (isConnecting) null else Icons.AutoMirrored.Filled.ArrowForward,
+                    isLoading = isConnecting
                 )
 
                 // Error Message
@@ -116,43 +131,28 @@ fun ConnectScreen(
                         modifier = Modifier.padding(top = 8.dp)
                     )
                 }
-
-                if (isConnecting) {
-                    Box(modifier = Modifier.fillMaxWidth().height(28.dp), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            color = LtiTheme.colors.primary,
-                            strokeWidth = 2.dp
-                        )
-                    }
-                } else {
-                    DesktopButton(
-                        text = "Connect",
-                        onClick = { onEvent(AppEvent.Connect) },
-                        modifier = Modifier.fillMaxWidth(),
-                        icon = Icons.AutoMirrored.Filled.ArrowForward
-                    )
-                }
             }
 
-            // Status Area
+            // Demo Banner
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+                    .background(LtiTheme.colors.warning.copy(alpha = 0.06f), RoundedCornerShape(2.dp))
+                    .border(1.dp, LtiTheme.colors.warning.copy(alpha = 0.2f), RoundedCornerShape(2.dp))
+                    .padding(12.dp),
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .background(LtiTheme.colors.border, LtiTheme.shapes.small)
+                Icon(
+                    Icons.Default.Info,
+                    null,
+                    tint = LtiTheme.colors.warning,
+                    modifier = Modifier.size(16.dp)
                 )
-                Spacer(Modifier.width(8.dp))
                 Text(
-                    text = "Ready to connect",
+                    text = "Demo mode — any host/port will simulate a successful connection.",
                     color = LtiTheme.colors.textSecondary,
-                    style = LtiTheme.typography.bodySmall
+                    style = LtiTheme.typography.bodySmall.copy(fontSize = 11.sp, lineHeight = 16.sp)
                 )
             }
         }
@@ -165,7 +165,7 @@ private fun ConnectTextField(
     onValueChange: (String) -> Unit,
     label: String,
     placeholder: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: androidx.compose.ui.graphics.vector.ImageVector?,
     enabled: Boolean
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -181,15 +181,17 @@ private fun ConnectTextField(
             placeholder = { Text(placeholder, color = LtiTheme.colors.textSecondary.copy(alpha = 0.5f)) },
             modifier = Modifier.fillMaxWidth(),
             enabled = enabled,
-            shape = LtiTheme.shapes.small,
-            leadingIcon = {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = LtiTheme.colors.textSecondary,
-                    modifier = Modifier.size(18.dp)
-                )
-            },
+            shape = RoundedCornerShape(2.dp), // Radius 2 per design
+            leadingIcon = if (icon != null) {
+                {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = LtiTheme.colors.textSecondary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            } else null,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = LtiTheme.colors.primary,
                 unfocusedBorderColor = LtiTheme.colors.border,

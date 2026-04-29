@@ -1,0 +1,1 @@
+sed -i 's/modifier: Modifier = Modifier.weight(1f).height(140.dp)/modifier: Modifier = Modifier.weight(1f).height(120.dp)/g' composeApp/src/commonMain/kotlin/com/lti/ltidesktop/ui/components/HomeScreen.kt

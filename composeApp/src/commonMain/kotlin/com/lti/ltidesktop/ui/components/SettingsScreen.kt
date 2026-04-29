@@ -1,177 +1,293 @@
 package com.lti.ltidesktop.ui.components
 
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.MenuOpen
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.*
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lti.ltidesktop.presentation.AppState
 import com.lti.ltidesktop.presentation.AppEvent
-import com.lti.ltidesktop.presentation.Screen
 import com.lti.ltidesktop.ui.theme.LtiTheme
-import com.lti.ltidesktop.ui.theme.ThemeManager
-import org.koin.compose.koinInject
+import com.lti.ltidesktop.ui.theme.TerminalTypography
+import com.lti.ltidesktop.ui.components.widgets.AntigravitySwitch
+import com.lti.ltidesktop.ui.components.widgets.AntigravitySlider
 
 @Composable
 fun SettingsScreen(
     state: AppState,
-    onEvent: (AppEvent) -> Unit,
-    themeManager: ThemeManager = koinInject()
+    onEvent: (AppEvent) -> Unit
 ) {
-    var selectedTab by remember { mutableStateOf(SettingsTab.GENERAL) }
+    var activeTab by remember { mutableStateOf("network") }
 
-    Row(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(LtiTheme.colors.background)
-    ) {
-        // Left Rail Navigation
+    val tabs = listOf(
+        TabItem("network", "Network", Icons.Default.WifiTethering),
+        TabItem("appearance", "Appearance", Icons.Default.Palette),
+        TabItem("system", "System", Icons.Default.Computer),
+        TabItem("about", "About", Icons.Default.Info)
+    )
+
+    Row(modifier = Modifier.fillMaxSize()) {
+        // Sidebar (220dp)
         Column(
             modifier = Modifier
-                .width(260.dp)
+                .width(220.dp)
                 .fillMaxHeight()
-                .padding(vertical = 32.dp, horizontal = 16.dp)
+                .background(Color(0xFF0C0C0C))
+                .border(width = 0.dp, color = Color.Transparent)
+                .drawBehind {
+                    drawLine(
+                        color = Color(0xFF1A1A1A),
+                        start = Offset(size.width, 0f),
+                        end = Offset(size.width, size.height),
+                        strokeWidth = 1.dp.toPx()
+                    )
+                }
+                .padding(horizontal = 12.dp, vertical = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
-            Text(
-                "Preferences",
-                style = LtiTheme.typography.displayLarge,
-                color = LtiTheme.colors.textPrimary,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-            )
-            
-            Spacer(modifier = Modifier.height(24.dp))
-
-            SettingsTab.values().forEach { tab ->
-                val isSelected = selectedTab == tab
+            tabs.forEach { tab ->
+                val active = activeTab == tab.key
+                val tabAccent = LtiTheme.colors.primary
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(40.dp)
-                        .clip(LtiTheme.shapes.medium)
-                        .background(if (isSelected) LtiTheme.colors.surfaceContainer else Color.Transparent)
-                        .clickable { selectedTab = tab }
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(if (active) Color(0xFF161616) else Color.Transparent)
+                        .drawBehind {
+                            if (active) {
+                                drawLine(
+                                    color = tabAccent,
+                                    start = Offset(0f, 0f),
+                                    end = Offset(0f, size.height),
+                                    strokeWidth = 2.dp.toPx()
+                                )
+                            }
+                        }
+                        .clickable { activeTab = tab.key }
                         .padding(horizontal = 12.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Icon(
                         imageVector = tab.icon,
                         contentDescription = null,
-                        tint = if (isSelected) LtiTheme.colors.primary else LtiTheme.colors.textSecondary,
-                        modifier = Modifier.size(18.dp)
+                        tint = if (active) LtiTheme.colors.primary else Color(0xFFA1A1AA),
+                        modifier = Modifier.size(16.dp)
                     )
                     Text(
-                        tab.label,
-                        style = LtiTheme.typography.bodyMedium,
-                        color = if (isSelected) LtiTheme.colors.textPrimary else LtiTheme.colors.textSecondary,
-                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                        text = tab.label,
+                        style = LtiTheme.typography.bodyMedium.copy(fontSize = 13.sp),
+                        color = if (active) Color.White else Color(0xFFA1A1AA)
                     )
                 }
-                Spacer(modifier = Modifier.height(4.dp))
             }
-            
-            Spacer(modifier = Modifier.weight(1f))
-            
-            // Bottom Action
-            DesktopButton(
-                text = "Back to Home",
-                onClick = { onEvent(AppEvent.NavigateTo(Screen.HOME)) },
-                icon = Icons.Default.ArrowBack,
-                modifier = Modifier.fillMaxWidth()
-            )
         }
 
-        VerticalDivider(color = LtiTheme.colors.border)
-
-        // Main Content Area
-        Column(
+        // Content
+        Box(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight()
-                .padding(horizontal = 64.dp, vertical = 48.dp)
+                .background(LtiTheme.colors.background)
+                .padding(32.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        selectedTab.label,
-                        style = LtiTheme.typography.displayLarge,
-                        color = LtiTheme.colors.textPrimary
-                    )
-                    Text(
-                        selectedTab.description,
-                        style = LtiTheme.typography.bodySmall,
-                        color = LtiTheme.colors.textSecondary
-                    )
-                }
-                
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    TextButton(onClick = { /* Reset */ }) {
-                        Text("Reset to Default", color = LtiTheme.colors.textSecondary, style = LtiTheme.typography.labelSmall)
-                    }
-                    DesktopButton(
-                        text = "Apply Changes",
-                        onClick = { onEvent(AppEvent.SaveSettings) }
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-            HorizontalDivider(color = LtiTheme.colors.border)
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Box(modifier = Modifier.weight(1f)) {
-                when (selectedTab) {
-                    SettingsTab.GENERAL -> GeneralSettings(state, onEvent)
-                    SettingsTab.TERMINAL -> TerminalSettings(state, onEvent)
-                    SettingsTab.CONNECTION -> ConnectionSettings(state, onEvent)
-                    SettingsTab.APPEARANCE -> AppearanceSettings(state, onEvent, themeManager)
-                    SettingsTab.ABOUT -> AboutSection()
-                }
+            when (activeTab) {
+                "network" -> NetworkPane(state, onEvent)
+                "appearance" -> AppearancePane(state, onEvent)
+                "system" -> SystemPane(onEvent)
+                "about" -> AboutPane()
             }
         }
     }
 }
 
 @Composable
-private fun SettingsGroup(
+private fun NetworkPane(state: AppState, onEvent: (AppEvent) -> Unit) {
+    Section(title = "Connection", desc = "How LtiPatcher reaches your remote console") {
+        SettingRow(
+            label = "Auto-reconnect",
+            hint = "Reconnect if the link drops",
+            control = {
+                AntigravitySwitch(
+                    checked = state.settings.autoConnect,
+                    onCheckedChange = { onEvent(AppEvent.UpdateAutoConnect(it)) }
+                )
+            }
+        )
+        SettingRow(
+            label = "Keep-alive packets",
+            hint = "Send periodic keepalive",
+            control = {
+                AntigravitySwitch(
+                    checked = true, // Mocked for now
+                    onCheckedChange = { }
+                )
+            }
+        )
+        SettingRow(
+            label = "Timeout",
+            hint = "${state.settings.connectionTimeout / 1000}s before reporting unreachable",
+            control = {
+                AntigravitySlider(
+                    value = state.settings.connectionTimeout.toFloat() / 1000f,
+                    onValueChange = { onEvent(AppEvent.UpdateConnectionTimeout((it * 1000).toInt())) },
+                    valueRange = 5f..60f,
+                    modifier = Modifier.width(120.dp)
+                )
+            }
+        )
+    }
+}
+
+@Composable
+private fun AppearancePane(state: AppState, onEvent: (AppEvent) -> Unit) {
+    var selectedTheme by remember { mutableStateOf("dark") }
+
+    Section(title = "Appearance") {
+        SettingRow(
+            label = "Theme",
+            hint = "Console color scheme",
+            control = {
+                Row(
+                    modifier = Modifier
+                        .background(Color(0xFF161616), RoundedCornerShape(4.dp))
+                        .padding(2.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    listOf("dark", "midnight").forEach { t ->
+                        val active = selectedTheme == t
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(if (active) LtiTheme.colors.primary.copy(alpha = 0.1f) else Color.Transparent)
+                                .clickable { selectedTheme = t }
+                                .padding(horizontal = 14.dp, vertical = 6.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = t.uppercase(),
+                                style = LtiTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp),
+                                color = if (active) LtiTheme.colors.primary else Color(0xFFA1A1AA)
+                            )
+                        }
+                    }
+                }
+            }
+        )
+        SettingRow(
+            label = "Monospace UI",
+            hint = "Use mono font for tabular data",
+            control = {
+                AntigravitySwitch(
+                    checked = true, // Mocked
+                    onCheckedChange = { }
+                )
+            }
+        )
+    }
+}
+
+@Composable
+private fun SystemPane(onEvent: (AppEvent) -> Unit) {
+    Section(title = "System") {
+        SettingRow(
+            label = "Restart Console",
+            hint = "Disconnect and re-establish session",
+            control = {
+                DesktopButton(
+                    text = "RESTART",
+                    onClick = { onEvent(AppEvent.Disconnect); onEvent(AppEvent.Connect) },
+                    icon = Icons.Default.Refresh,
+                    isPrimary = false
+                )
+            }
+        )
+        SettingRow(
+            label = "Force Reboot",
+            hint = "Send SIGHUP to remote host",
+            control = {
+                DesktopButton(
+                    text = "REBOOT",
+                    onClick = { /* Reboot */ },
+                    icon = Icons.Default.PowerOff,
+                    isPrimary = false,
+                    modifier = Modifier.border(1.dp, LtiTheme.colors.error.copy(alpha = 0.4f), RoundedCornerShape(4.dp))
+                )
+            }
+        )
+    }
+}
+
+@Composable
+private fun AboutPane() {
+    Section(title = "About LtiPatcher") {
+        SettingRow(
+            label = "Version",
+            control = {
+                Text("v0.1.0 · build 4291", style = TerminalTypography.copy(fontSize = 12.sp, color = Color(0xFFA1A1AA)))
+            }
+        )
+        SettingRow(
+            label = "Runtime",
+            control = {
+                Text("Compose Multiplatform · JVM 21", style = TerminalTypography.copy(fontSize = 12.sp, color = Color(0xFFA1A1AA)))
+            }
+        )
+        SettingRow(
+            label = "License",
+            control = {
+                Text("MIT", style = TerminalTypography.copy(fontSize = 12.sp, color = Color(0xFFA1A1AA)))
+            }
+        )
+    }
+}
+
+@Composable
+private fun Section(
     title: String,
+    desc: String? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Column(modifier = Modifier.fillMaxWidth().padding(bottom = 40.dp)) {
-        Text(
-            title.uppercase(),
-            style = LtiTheme.typography.labelSmall,
-            color = LtiTheme.colors.textSecondary,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 1.sp
-        )
-        Spacer(modifier = Modifier.height(16.dp))
+    Column(modifier = Modifier.padding(bottom = 32.dp)) {
+        Column(modifier = Modifier.padding(bottom = 16.dp)) {
+            Text(
+                text = title.uppercase(),
+                style = LtiTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp),
+                color = Color.White
+            )
+            if (desc != null) {
+                Text(
+                    text = desc,
+                    style = LtiTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                    color = Color(0xFFA1A1AA),
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
+        }
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(LtiTheme.colors.surfaceContainerLowest, LtiTheme.shapes.medium)
-                .border(1.dp, LtiTheme.colors.border, LtiTheme.shapes.medium)
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+                .background(Color(0xFF1A1A1A))
+                .padding(top = 0.dp), // Divider-style layout
+            verticalArrangement = Arrangement.spacedBy(1.dp) // Row spacing = divider
         ) {
             content()
         }
@@ -179,253 +295,36 @@ private fun SettingsGroup(
 }
 
 @Composable
-private fun SettingsRow(
-    title: String,
-    description: String,
+private fun SettingRow(
+    label: String,
+    hint: String? = null,
     control: @Composable () -> Unit
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFF0F0F0F))
+            .padding(horizontal = 20.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Column(modifier = Modifier.weight(1f).padding(end = 32.dp)) {
-            Text(title, style = LtiTheme.typography.bodyMedium, color = LtiTheme.colors.textPrimary, fontWeight = FontWeight.Medium)
-            Text(description, style = LtiTheme.typography.bodySmall, color = LtiTheme.colors.textSecondary)
+        Column {
+            Text(
+                text = label,
+                style = LtiTheme.typography.bodyMedium.copy(fontSize = 13.sp),
+                color = Color.White
+            )
+            if (hint != null) {
+                Text(
+                    text = hint,
+                    style = LtiTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                    color = Color(0xFF71717A),
+                    modifier = Modifier.padding(top = 2.dp)
+                )
+            }
         }
         control()
     }
 }
 
-@Composable
-private fun SettingsScrollablePanel(content: androidx.compose.foundation.lazy.LazyListScope.() -> Unit) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        val state = androidx.compose.foundation.lazy.rememberLazyListState()
-        LazyColumn(
-            state = state,
-            modifier = Modifier.fillMaxSize().padding(end = 16.dp),
-            content = content
-        )
-        
-        var isScrollbarHovered by remember { mutableStateOf(false) }
-        val thickness by androidx.compose.animation.core.animateDpAsState(targetValue = if (isScrollbarHovered) 8.dp else 4.dp)
-        
-        androidx.compose.foundation.VerticalScrollbar(
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .fillMaxHeight()
-                .pointerInput(Unit) {
-                    awaitPointerEventScope {
-                        while (true) {
-                            val event = awaitPointerEvent()
-                            when (event.type) {
-                                PointerEventType.Enter -> isScrollbarHovered = true
-                                PointerEventType.Exit -> isScrollbarHovered = false
-                            }
-                        }
-                    }
-                },
-            adapter = androidx.compose.foundation.rememberScrollbarAdapter(scrollState = state),
-            style = androidx.compose.foundation.ScrollbarStyle(
-                minimalHeight = 16.dp,
-                thickness = thickness,
-                shape = LtiTheme.shapes.small,
-                hoverDurationMillis = 300,
-                unhoverColor = LtiTheme.colors.textSecondary.copy(alpha = 0.15f),
-                hoverColor = LtiTheme.colors.textSecondary.copy(alpha = 0.4f)
-            )
-        )
-    }
-}
-
-@Composable
-private fun GeneralSettings(state: AppState, onEvent: (AppEvent) -> Unit) {
-    SettingsScrollablePanel {
-        item {
-            SettingsGroup("Application") {
-                SettingsRow(
-                    "Auto-connect on Startup",
-                    "Automatically attempt to connect to the last known host when the app starts."
-                ) {
-                    Switch(
-                        checked = state.settings.autoConnect,
-                        onCheckedChange = { onEvent(AppEvent.UpdateAutoConnect(it)) },
-                        colors = ltiSwitchColors()
-                    )
-                }
-                
-                SettingsRow(
-                    "Language",
-                    "Select your preferred interface language."
-                ) {
-                    // Mock Dropdown
-                    Box(
-                        modifier = Modifier
-                            .width(160.dp)
-                            .background(LtiTheme.colors.surface, LtiTheme.shapes.small)
-                            .border(1.dp, LtiTheme.colors.border, LtiTheme.shapes.small)
-                            .padding(horizontal = 12.dp, vertical = 6.dp)
-                    ) {
-                        Text(state.settings.language, style = LtiTheme.typography.bodyMedium, color = LtiTheme.colors.textPrimary)
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun TerminalSettings(state: AppState, onEvent: (AppEvent) -> Unit) {
-    SettingsScrollablePanel {
-        item {
-            SettingsGroup("Behavior") {
-                SettingsRow(
-                    "Scrollback Limit",
-                    "Number of lines to keep in the terminal history."
-                ) {
-                    OutlinedTextField(
-                        value = state.settings.historyLimit.toString(),
-                        onValueChange = { val limit = it.toIntOrNull() ?: 0; onEvent(AppEvent.UpdateHistoryLimit(limit)) },
-                        modifier = Modifier.width(120.dp),
-                        textStyle = LtiTheme.typography.bodyMedium,
-                        singleLine = true,
-                        shape = LtiTheme.shapes.small,
-                        colors = ltiTextFieldColors()
-                    )
-                }
-            }
-            
-            SettingsGroup("Text") {
-                SettingsRow(
-                    "Font Size",
-                    "The size of the terminal text (10px - 24px)."
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Slider(
-                            value = state.settings.fontSize.toFloat(),
-                            onValueChange = { onEvent(AppEvent.UpdateFontSize(it.toInt())) },
-                            valueRange = 10f..24f,
-                            modifier = Modifier.width(150.dp),
-                            colors = SliderDefaults.colors(thumbColor = LtiTheme.colors.primary, activeTrackColor = LtiTheme.colors.primary)
-                        )
-                        Text("${state.settings.fontSize}px", style = LtiTheme.typography.labelSmall, color = LtiTheme.colors.textPrimary, modifier = Modifier.width(40.dp))
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ConnectionSettings(state: AppState, onEvent: (AppEvent) -> Unit) {
-    SettingsScrollablePanel {
-        item {
-            SettingsGroup("Network") {
-                SettingsRow(
-                    "Connection Timeout",
-                    "Time in milliseconds to wait before aborting a connection attempt."
-                ) {
-                    OutlinedTextField(
-                        value = state.settings.connectionTimeout.toString(),
-                        onValueChange = { val t = it.toIntOrNull() ?: 0; onEvent(AppEvent.UpdateConnectionTimeout(t)) },
-                        modifier = Modifier.width(120.dp),
-                        textStyle = LtiTheme.typography.bodyMedium,
-                        singleLine = true,
-                        shape = LtiTheme.shapes.small,
-                        colors = ltiTextFieldColors()
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun AppearanceSettings(state: AppState, onEvent: (AppEvent) -> Unit, themeManager: ThemeManager) {
-    SettingsScrollablePanel {
-        item {
-            SettingsGroup("Theme") {
-                SettingsRow(
-                    "Dark Mode",
-                    "Toggle between light and dark professional zinc themes."
-                ) {
-                    Switch(
-                        checked = themeManager.isDark,
-                        onCheckedChange = { themeManager.toggleTheme() },
-                        colors = ltiSwitchColors()
-                    )
-                }
-            }
-            
-            SettingsGroup("Window") {
-                SettingsRow(
-                    "Background Opacity",
-                    "Adjust the transparency of the application panels."
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Slider(
-                            value = state.settings.opacity,
-                            onValueChange = { onEvent(AppEvent.UpdateOpacity(it)) },
-                            valueRange = 0.5f..1.0f,
-                            modifier = Modifier.width(150.dp),
-                            colors = SliderDefaults.colors(thumbColor = LtiTheme.colors.primary, activeTrackColor = LtiTheme.colors.primary)
-                        )
-                        Text("${(state.settings.opacity * 100).toInt()}%", style = LtiTheme.typography.labelSmall, color = LtiTheme.colors.textPrimary, modifier = Modifier.width(40.dp))
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun AboutSection() {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Box(
-            modifier = Modifier
-                .size(80.dp)
-                .background(LtiTheme.colors.primary.copy(alpha = 0.1f), CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(Icons.Default.Terminal, null, tint = LtiTheme.colors.primary, modifier = Modifier.size(40.dp))
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        Text("LtiDesktop CLI", style = LtiTheme.typography.displayLarge, color = LtiTheme.colors.textPrimary)
-        Text("Version 2.4.0-kinetic", style = LtiTheme.typography.bodySmall, color = LtiTheme.colors.textSecondary)
-        Spacer(modifier = Modifier.height(24.dp))
-        Text(
-            "© 2026 Lti Solutions. All rights reserved.\nA professional cross-platform terminal interface.",
-            style = LtiTheme.typography.bodySmall,
-            color = LtiTheme.colors.textSecondary,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-        )
-    }
-}
-
-@Composable
-private fun ltiSwitchColors() = SwitchDefaults.colors(
-    checkedThumbColor = Color.White,
-    checkedTrackColor = LtiTheme.colors.primary,
-    uncheckedThumbColor = LtiTheme.colors.textSecondary,
-    uncheckedTrackColor = LtiTheme.colors.border
-)
-
-@Composable
-private fun ltiTextFieldColors() = OutlinedTextFieldDefaults.colors(
-    focusedBorderColor = LtiTheme.colors.primary,
-    unfocusedBorderColor = LtiTheme.colors.border,
-    focusedTextColor = LtiTheme.colors.textPrimary,
-    unfocusedTextColor = LtiTheme.colors.textPrimary
-)
-
-private enum class SettingsTab(val label: String, val icon: ImageVector, val description: String) {
-    GENERAL("General", Icons.Default.Settings, "Configure general application behavior and localization."),
-    TERMINAL("Terminal", Icons.Default.Terminal, "Customize the command-line interface and history behavior."),
-    CONNECTION("Connection", Icons.Default.Cloud, "Manage network settings, timeouts, and connectivity."),
-    APPEARANCE("Appearance", Icons.Default.Palette, "Personalize the visual style, theme, and transparency."),
-    ABOUT("About", Icons.Default.Info, "Technical specifications and version information.")
-}
+private data class TabItem(val key: String, val label: String, val icon: androidx.compose.ui.graphics.vector.ImageVector)

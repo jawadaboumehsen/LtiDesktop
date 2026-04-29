@@ -1,0 +1,17 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:#000;color:var(--fg);font-family:var(--font-sans);height:100%}
+  .wrap{padding:18px;display:flex;flex-direction:column;gap:14px}
+  .row{display:flex;align-items:baseline;gap:16px}
+  .lbl{font-size:10px;font-family:var(--font-mono);color:var(--fg-secondary);width:140px;flex-shrink:0}
+</style></head><body>
+<div class="wrap">
+  <div class="row"><span class="lbl">label 11/14/600 +.5</span><span class="t-label">SERVER IP ADDRESS</span></div>
+  <div class="row"><span class="lbl">body-sm 12/16/400</span><span class="t-body-sm">Last 24h • 1,240 commands</span></div>
+  <div class="row"><span class="lbl">term 13/20/500 mono</span><span class="t-term" style="color:var(--cmd-prompt)">$ root@corp-sys-prod-01:~</span></div>
+  <div class="row"><span class="lbl">term sys</span><span class="t-term" style="color:var(--cmd-sys)">[SYS] connection established</span></div>
+  <div class="row"><span class="lbl">term error</span><span class="t-term" style="color:var(--cmd-error)">[ERROR] timeout after 5000ms</span></div>
+  <div class="row"><span class="lbl">term warn</span><span class="t-term" style="color:var(--cmd-warn)">[WARN] memory at 94%</span></div>
+</div>
+</body></html>

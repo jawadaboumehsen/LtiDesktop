@@ -1,337 +1,290 @@
 package com.lti.ltidesktop.ui.components
 
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.*
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.lti.ltidesktop.network.ConnectionState
 import com.lti.ltidesktop.presentation.AppState
 import com.lti.ltidesktop.presentation.AppEvent
+import com.lti.ltidesktop.presentation.ActionLog
 import com.lti.ltidesktop.ui.theme.LtiTheme
 import com.lti.ltidesktop.ui.theme.TerminalTypography
+import com.lti.ltidesktop.ui.components.widgets.ActionTile
+import com.lti.ltidesktop.ui.components.widgets.ActivityLogItem
+import com.lti.ltidesktop.ui.components.widgets.StatusChip
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
     state: AppState,
     onEvent: (AppEvent) -> Unit
 ) {
+    val colors = LtiTheme.colors
+    val scope = rememberCoroutineScope()
+
+    // Local state for action simulation (matching Home.jsx behavior)
+    var busyActionKey by remember { mutableStateOf<String?>(null) }
+    var completedActions by remember { mutableStateOf(setOf<String>()) }
+
+    // Reset "Done" state after 2.4s per Home.jsx spec
+    LaunchedEffect(completedActions) {
+        if (completedActions.isNotEmpty()) {
+            delay(2400)
+            completedActions = emptySet()
+        }
+    }
+
+    val triggerAction = { key: String, ms: Long ->
+        if (busyActionKey == null) {
+            scope.launch {
+                busyActionKey = key
+                delay(ms)
+                busyActionKey = null
+                completedActions = completedActions + key
+                onEvent(AppEvent.ExecuteAction(key))
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(LtiTheme.colors.background)
-            .padding(horizontal = 16.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .background(colors.background)
+            .padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        // Header
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Bottom
+        // Banner: Connected Host
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF0F0F0F), RoundedCornerShape(4.dp))
+                .border(1.dp, Color(0xFF1A1A1A), RoundedCornerShape(4.dp))
+                .padding(20.dp)
         ) {
-            Column {
-                Text(
-                    text = "System Dashboard",
-                    color = LtiTheme.colors.textPrimary,
-                    style = LtiTheme.typography.displayLarge
-                )
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    text = "Overview of network health and activity.",
-                    color = LtiTheme.colors.textSecondary,
-                    style = LtiTheme.typography.bodyMedium
-                )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text(
+                        text = "CONNECTED HOST",
+                        style = LtiTheme.typography.labelSmall,
+                        color = colors.textSecondary,
+                        letterSpacing = 0.5.sp
+                    )
+                    Text(
+                        text = buildAnnotatedString {
+                            withStyle(SpanStyle(color = Color.White)) {
+                                append("${state.user}@${state.host}")
+                            }
+                            withStyle(SpanStyle(color = Color(0xFF71717A))) {
+                                append(":${state.port}")
+                            }
+                        },
+                        style = TerminalTypography.copy(fontSize = 20.sp, fontWeight = FontWeight.Bold),
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
+                StatusChip(text = "Session Active", tone = "success")
             }
-            
-            DesktopButton(
-                text = "Refresh Data",
-                onClick = { /* Refresh */ },
-                icon = Icons.Default.Refresh
-            )
         }
 
-        // Bento Box Grid
-        Row(
-            modifier = Modifier.fillMaxWidth().weight(1f),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Left Column (Cards + Analytics)
-            Column(
-                modifier = Modifier.weight(2f),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Status Cards Row
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    val isConnected = state.connectionState == ConnectionState.CONNECTED
-                    StatusCard(
-                        title = "Connection Status",
-                        value = if (isConnected) "Active" else "Offline",
-                        icon = Icons.Default.Dns,
-                        iconColor = LtiTheme.colors.success,
-                        iconBg = LtiTheme.colors.success.copy(alpha = 0.1f),
-                        subtitle = if (isConnected) "Stable" else "No connection",
-                        subtitleColor = if (isConnected) LtiTheme.colors.success else LtiTheme.colors.error,
-                        showPulse = isConnected,
-                        modifier = Modifier.weight(1f)
-                    )
-                    StatusCard(
-                        title = "Total Commands",
-                        value = "1,240",
-                        icon = Icons.Default.Terminal,
-                        iconColor = LtiTheme.colors.primary,
-                        iconBg = LtiTheme.colors.primary.copy(alpha = 0.1f),
-                        subtitle = "Last 24h",
-                        subtitleColor = LtiTheme.colors.textSecondary,
-                        showPulse = false,
-                        modifier = Modifier.weight(1f)
-                    )
-                    StatusCard(
-                        title = "System Uptime",
-                        value = "4h 12m",
-                        icon = Icons.Default.Timer,
-                        iconColor = LtiTheme.colors.info,
-                        iconBg = LtiTheme.colors.info.copy(alpha = 0.1f),
-                        subtitle = "Since last reboot",
-                        subtitleColor = LtiTheme.colors.textSecondary,
-                        showPulse = false,
-                        modifier = Modifier.weight(1f)
+        // Quick Actions Grid
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text(
+                text = "QUICK ACTIONS",
+                style = LtiTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                color = colors.textSecondary,
+                letterSpacing = 0.5.sp
+            )
+
+            val actions = listOf(
+                ActionData("dump", Icons.Default.Download, "Get Dump Files", "Pull crash + memory dumps from the host", 1800),
+                ActionData("reconnect", Icons.Default.Cable, "Reconnect Session", "Re-establish the SSH tunnel", 1200),
+                ActionData("memdump", Icons.Default.Memory, "Capture Memory Snapshot", "Dump RAM regions to .hpp", 2000),
+                ActionData("logs", Icons.Default.Description, "Sync Logs", "Pull /var/log/* to local store", 1500),
+                ActionData("diag", Icons.Default.BugReport, "Run Diagnostics", "Smoke-test the patcher pipeline", 1700),
+                ActionData("reboot", Icons.Default.PowerOff, "Force Reboot Host", "SIGHUP + cold restart", 1300, isDanger = true)
+            )
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                actions.take(3).forEach { a ->
+                    ActionTile(
+                        title = a.title,
+                        desc = a.desc,
+                        icon = a.icon,
+                        onClick = { triggerAction(a.key, a.ms) },
+                        isLoading = busyActionKey == a.key,
+                        isDone = completedActions.contains(a.key),
+                        isDanger = a.isDanger,
+                        disabled = busyActionKey != null && busyActionKey != a.key,
+                        modifier = Modifier.weight(1f).height(140.dp)
                     )
                 }
-
-                // Analytics Section
-                AnalyticsSection()
             }
-
-            // Right Column (Activity Logs)
-            Column(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .weight(1f)
-                    .background(LtiTheme.colors.surfaceContainerLowest, LtiTheme.shapes.medium)
-                    .border(1.dp, LtiTheme.colors.border, LtiTheme.shapes.medium)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(LtiTheme.colors.surface, RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "Recent Activity Logs",
-                        color = LtiTheme.colors.textPrimary,
-                        style = LtiTheme.typography.titleSmall
-                    )
-                    Text(
-                        text = "View All",
-                        color = LtiTheme.colors.primary,
-                        style = LtiTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-                        modifier = Modifier.clickable { /* View All */ }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                actions.drop(3).forEach { a ->
+                    ActionTile(
+                        title = a.title,
+                        desc = a.desc,
+                        icon = a.icon,
+                        onClick = { triggerAction(a.key, a.ms) },
+                        isLoading = busyActionKey == a.key,
+                        isDone = completedActions.contains(a.key),
+                        isDanger = a.isDanger,
+                        disabled = busyActionKey != null && busyActionKey != a.key,
+                        modifier = Modifier.weight(1f).height(140.dp)
                     )
                 }
+            }
+        }
 
-                HorizontalDivider(color = LtiTheme.colors.border)
-
-                val mockLogs = listOf(
-                    LogData("Login", "login", "Admin User", " authenticated successfully via SSH.", "IP: 192.168.1.104 • Node: Alpha-01", "2 mins ago"),
-                    LogData("Sync", "cloud_sync", "", "System backup initiated automatically.", "Target: /mnt/backup/daily • Size: 4.2GB", "45 mins ago"),
-                    LogData("Warning", "warning", "", "High memory usage detected on worker node.", "Node: Beta-03 • Usage: 94%", "2 hours ago"),
-                    LogData("Build", "build", "System", "Configuration updated by System.", "File: /etc/nginx/nginx.conf • Action: Reload", "4 hours ago")
-                )
-
-                Box(modifier = Modifier.fillMaxSize()) {
-                    val listState = androidx.compose.foundation.lazy.rememberLazyListState()
-                    LazyColumn(
-                        state = listState,
-                        modifier = Modifier.fillMaxSize().padding(end = 8.dp)
-                    ) {
-                        items(mockLogs) { log ->
-                            ActivityLogItem(log)
-                            HorizontalDivider(color = LtiTheme.colors.border.copy(alpha=0.5f))
-                        }
-                    }
-                    
-                    var isScrollbarHovered by remember { mutableStateOf(false) }
-                    val thickness by androidx.compose.animation.core.animateDpAsState(targetValue = if (isScrollbarHovered) 8.dp else 4.dp)
-                    
-                    androidx.compose.foundation.VerticalScrollbar(
-                        modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .fillMaxHeight()
-                            .pointerInput(Unit) {
-                                awaitPointerEventScope {
-                                    while (true) {
-                                        val event = awaitPointerEvent()
-                                        when (event.type) {
-                                            PointerEventType.Enter -> isScrollbarHovered = true
-                                            PointerEventType.Exit -> isScrollbarHovered = false
-                                        }
-                                    }
-                                }
-                            },
-                        adapter = androidx.compose.foundation.rememberScrollbarAdapter(scrollState = listState),
-                        style = androidx.compose.foundation.ScrollbarStyle(
-                            minimalHeight = 16.dp,
-                            thickness = thickness,
-                            shape = LtiTheme.shapes.small,
-                            hoverDurationMillis = 300,
-                            unhoverColor = LtiTheme.colors.textSecondary.copy(alpha = 0.15f),
-                            hoverColor = LtiTheme.colors.textSecondary.copy(alpha = 0.4f)
+        // Recent Actions Card
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF0F0F0F), RoundedCornerShape(4.dp))
+                .border(1.dp, Color(0xFF1A1A1A), RoundedCornerShape(4.dp))
+        ) {
+            // Header
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .drawBehind {
+                        drawLine(
+                            color = Color(0xFF1A1A1A),
+                            start = Offset(0f, size.height),
+                            end = Offset(size.width, size.height),
+                            strokeWidth = 1.dp.toPx()
                         )
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun StatusCard(
-    title: String,
-    value: String,
-    icon: ImageVector,
-    iconColor: Color,
-    iconBg: Color,
-    subtitle: String,
-    subtitleColor: Color,
-    showPulse: Boolean,
-    modifier: Modifier = Modifier
-) {
-    var isHovered by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
-
-    Column(
-        modifier = modifier
-            .background(if (isHovered) LtiTheme.colors.surfaceContainer else LtiTheme.colors.surfaceContainerLowest, LtiTheme.shapes.medium)
-            .border(1.dp, if (isHovered) LtiTheme.colors.border.copy(alpha=1f) else LtiTheme.colors.border.copy(alpha=0.5f), LtiTheme.shapes.medium)
-            .pointerInput(Unit) {
-                awaitPointerEventScope {
-                    while (true) {
-                        val event = awaitPointerEvent()
-                        when (event.type) {
-                            PointerEventType.Enter -> isHovered = true
-                            PointerEventType.Exit -> isHovered = false
-                        }
                     }
-                }
-            }
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(iconBg, LtiTheme.shapes.medium),
-                contentAlignment = Alignment.Center
+                    .padding(horizontal = 20.dp, vertical = 14.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(icon, null, tint = iconColor, modifier = Modifier.size(20.dp))
-            }
-            Text(
-                text = title.uppercase(),
-                color = LtiTheme.colors.textSecondary,
-                style = LtiTheme.typography.labelSmall
-            )
-        }
-        Row(
-            verticalAlignment = Alignment.Bottom,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = value,
-                color = LtiTheme.colors.textPrimary,
-                style = LtiTheme.typography.displayLarge
-            )
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                if (showPulse) {
-                    Box(modifier = Modifier.size(8.dp).background(LtiTheme.colors.success, LtiTheme.shapes.medium))
-                }
                 Text(
-                    text = subtitle,
-                    color = subtitleColor,
-                    style = LtiTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium)
+                    text = "Recent Actions",
+                    style = LtiTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, fontSize = 13.sp),
+                    color = Color.White
+                )
+                Text(
+                    text = "last 24h",
+                    style = TerminalTypography.copy(fontSize = 11.sp),
+                    color = Color(0xFF71717A)
                 )
             }
+
+            Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)) {
+                state.recentActions.take(4).forEachIndexed { i, log ->
+                    RecentActionRow(log, isLast = i == state.recentActions.take(4).size - 1)
+                }
+            }
         }
     }
 }
 
-data class LogData(
-    val type: String,
-    val iconName: String,
-    val subject: String,
-    val action: String,
-    val details: String,
-    val time: String
-)
-
 @Composable
-private fun ActivityLogItem(log: LogData) {
-    val (icon, tint, bg) = when (log.iconName) {
-        "login" -> Triple(Icons.Default.Login, LtiTheme.colors.success, LtiTheme.colors.success.copy(alpha = 0.1f))
-        "cloud_sync" -> Triple(Icons.Default.CloudSync, LtiTheme.colors.primary, LtiTheme.colors.primary.copy(alpha = 0.1f))
-        "warning" -> Triple(Icons.Default.Warning, LtiTheme.colors.warning, LtiTheme.colors.warning.copy(alpha = 0.1f))
-        "build" -> Triple(Icons.Default.Build, LtiTheme.colors.textSecondary, LtiTheme.colors.surfaceContainer)
-        else -> Triple(Icons.Default.Info, Color.Gray, Color.LightGray)
+private fun RecentActionRow(log: ActionLog, isLast: Boolean) {
+    val colors = LtiTheme.colors
+    val toneColor = when (log.tone) {
+        "success" -> colors.success
+        "warn" -> colors.warning
+        "error" -> colors.error
+        else -> colors.info
     }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { }
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(vertical = 12.dp)
+            .drawBehind {
+                if (!isLast) {
+                    drawLine(
+                        color = Color(0xFF1A1A1A),
+                        start = Offset(0f, size.height),
+                        end = Offset(size.width, size.height),
+                        strokeWidth = 1.dp.toPx()
+                    )
+                }
+            },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Box(
             modifier = Modifier
-                .size(24.dp)
-                .background(bg, LtiTheme.shapes.medium),
+                .size(28.dp)
+                .background(toneColor.copy(alpha = 0.1f), RoundedCornerShape(4.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Icon(icon, null, tint = tint, modifier = Modifier.size(12.dp))
-        }
-        
-        Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
-            val text = buildAnnotatedString {
-                if (log.subject.isNotEmpty()) {
-                    withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = LtiTheme.colors.textPrimary)) {
-                        append(log.subject)
-                    }
-                    append(" ")
-                }
-                append(log.action)
-                append(" ")
-                withStyle(style = SpanStyle(color = LtiTheme.colors.textSecondary)) {
-                    append(log.details)
-                }
+            val icon = when (log.key) {
+                "dump" -> Icons.Default.Download
+                "logs" -> Icons.Default.Description
+                "reconnect" -> Icons.Default.Cable
+                "diag" -> Icons.Default.BugReport
+                else -> Icons.Default.Info
             }
-            Text(text, style = LtiTheme.typography.bodySmall, color = LtiTheme.colors.textPrimary, maxLines = 1)
+            Icon(icon, null, tint = toneColor, modifier = Modifier.size(14.dp))
         }
-        
-        Text(log.time, style = LtiTheme.typography.bodySmall, color = LtiTheme.colors.textSecondary)
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = log.title.uppercase(),
+                style = LtiTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 0.5.sp),
+                color = Color.White
+            )
+            Text(
+                text = log.meta,
+                style = TerminalTypography.copy(fontSize = 11.sp),
+                color = Color(0xFFA1A1AA)
+            )
+        }
+
+        Text(
+            text = log.time,
+            style = TerminalTypography.copy(fontSize = 10.sp),
+            color = Color(0xFF71717A)
+        )
     }
+}
+
+private data class ActionData(
+    val key: String,
+    val icon: ImageVector,
+    val title: String,
+    val desc: String,
+    val ms: Long,
+    val isDanger: Boolean = false
+)
+
+// Add key to ActionLog to support icon mapping
+private val ActionLog.key: String get() = when {
+    title.contains("dump", ignoreCase = true) -> "dump"
+    title.contains("log", ignoreCase = true) -> "logs"
+    title.contains("reconnect", ignoreCase = true) -> "reconnect"
+    title.contains("diag", ignoreCase = true) -> "diag"
+    else -> "info"
 }

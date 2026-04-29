@@ -1,0 +1,2 @@
+sed -i 's/TooltipDefaults.rememberPlainTooltipPositionProvider()/TooltipDefaults.rememberTooltipPositionProvider(positioning = TooltipAnchorPosition.Above)/g' composeApp/src/commonMain/kotlin/com/lti/ltidesktop/ui/components/MainNavigation.kt
+sed -i 's/import androidx.compose.material3.\*/import androidx.compose.material3.*\nimport androidx.compose.material3.TooltipAnchorPosition/g' composeApp/src/commonMain/kotlin/com/lti/ltidesktop/ui/components/MainNavigation.kt

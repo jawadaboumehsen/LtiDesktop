@@ -32,7 +32,8 @@ fun DesktopButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     icon: ImageVector? = null,
-    isPrimary: Boolean = true
+    isPrimary: Boolean = true,
+    isLoading: Boolean = false
 ) {
     var isHovered by remember { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
@@ -63,12 +64,19 @@ fun DesktopButton(
                 }
             }
             .pointerHoverIcon(PointerIcon.Hand)
-            .clickable(interactionSource = interactionSource, indication = null) { onClick() }
+            .clickable(enabled = !isLoading, interactionSource = interactionSource, indication = null) { onClick() }
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
-        if (icon != null) {
+        if (isLoading) {
+            androidx.compose.material3.CircularProgressIndicator(
+                modifier = Modifier.size(14.dp),
+                color = contentColor,
+                strokeWidth = 2.dp
+            )
+            Spacer(Modifier.width(8.dp))
+        } else if (icon != null) {
             Icon(icon, contentDescription = null, tint = contentColor, modifier = Modifier.size(14.dp))
             Spacer(Modifier.width(6.dp))
         }

@@ -1,0 +1,23 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:#000;color:var(--fg);font-family:var(--font-sans);height:100%}
+  .wrap{padding:18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:4px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.045em}
+  .chip .dot{width:6px;height:6px;border-radius:0}
+  .chip.success{background:rgba(0,255,170,.10);border:1px solid rgba(0,255,170,.20);color:#00FFAA}
+  .chip.success .dot{background:#00FFAA}
+  .chip.warn{background:rgba(255,214,0,.10);border:1px solid rgba(255,214,0,.20);color:#FFD600}
+  .chip.warn .dot{background:#FFD600}
+  .chip.error{background:rgba(255,51,102,.10);border:1px solid rgba(255,51,102,.20);color:#FF3366}
+  .chip.error .dot{background:#FF3366}
+  .chip.info{background:rgba(0,229,255,.10);border:1px solid rgba(0,229,255,.20);color:#00E5FF}
+  .chip.info .dot{background:#00E5FF}
+</style></head><body>
+<div class="wrap">
+  <span class="chip success"><span class="dot"></span>Connected</span>
+  <span class="chip info"><span class="dot"></span>Syncing</span>
+  <span class="chip warn"><span class="dot"></span>Throttled</span>
+  <span class="chip error"><span class="dot"></span>Offline</span>
+</div>
+</body></html>

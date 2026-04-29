@@ -1,0 +1,17 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:#000;color:var(--fg);font-family:var(--font-sans);height:100%}
+  .wrap{padding:18px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .cell{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .sq{width:64px;height:64px;background:#161616;border:1px solid var(--border)}
+  .lbl{font-family:var(--font-mono);font-size:10px;color:var(--fg-secondary);text-align:center}
+  .lbl b{color:var(--fg);font-weight:600}
+</style></head><body>
+<div class="wrap">
+  <div class="cell"><div class="sq"></div><div class="lbl"><b>none</b><br/>0px</div></div>
+  <div class="cell"><div class="sq" style="border-radius:2px"></div><div class="lbl"><b>sm</b><br/>2px</div></div>
+  <div class="cell"><div class="sq" style="border-radius:4px"></div><div class="lbl"><b>md / lg</b><br/>4px (dominant)</div></div>
+  <div class="cell"><div class="sq" style="border-radius:9999px"></div><div class="lbl"><b>pill</b><br/>full (dots only)</div></div>
+</div>
+</body></html>
