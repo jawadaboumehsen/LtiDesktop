@@ -25,6 +25,9 @@ import com.lti.ltidesktop.presentation.AppState
 import com.lti.ltidesktop.presentation.AppEvent
 import com.lti.ltidesktop.ui.theme.LtiTheme
 
+import androidx.compose.ui.draw.shadow
+import com.lti.ltidesktop.ui.imagevector.LtiPatcherIcon
+
 @Composable
 fun ConnectScreen(
     state: AppState,
@@ -35,41 +38,43 @@ fun ConnectScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0A0A0A)), // Exact background from Connect.jsx
+            .background(Color(0xFF0A0A0A)), // Mockup background
         contentAlignment = Alignment.Center
     ) {
         Column(
             modifier = Modifier
-                .width(400.dp) // Match 400 width from Connect.jsx
+                .width(400.dp)
                 .padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // Header
+            // Header (Flat as in Mockup)
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.padding(bottom = 16.dp)
             ) {
-                // Logo Placeholder (would be logo-mark.svg)
                 Icon(
-                    imageVector = Icons.Default.Dns,
+                    imageVector = LtiPatcherIcon,
                     contentDescription = null,
-                    tint = LtiTheme.colors.primary,
+                    tint = Color.Unspecified,
                     modifier = Modifier.size(40.dp)
                 )
-                
-                Text(
-                    text = "Connect to Console",
-                    color = Color.White,
-                    style = LtiTheme.typography.displayLarge.copy(fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                )
-                Text(
-                    text = "Enter your remote host details",
-                    color = LtiTheme.colors.textSecondary,
-                    style = LtiTheme.typography.bodySmall.copy(fontSize = 12.sp),
-                    textAlign = TextAlign.Center
-                )
+
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "Connect to Console",
+                        color = Color.White,
+                        style = LtiTheme.typography.displayLarge.copy(fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    )
+                    Text(
+                        text = "Enter your remote host details",
+                        color = LtiTheme.colors.textSecondary,
+                        style = LtiTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                        modifier = Modifier.padding(top = 4.dp),
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
 
             // Connection Form
@@ -90,26 +95,24 @@ fun ConnectScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Box(modifier = Modifier.weight(1f)) {
-                        ConnectTextField(
-                            value = state.port,
-                            onValueChange = { onEvent(AppEvent.UpdatePort(it)) },
-                            label = "Port",
-                            placeholder = "22",
-                            icon = null,
-                            enabled = !isConnecting
-                        )
-                    }
-                    Box(modifier = Modifier.weight(2f)) {
-                        ConnectTextField(
-                            value = state.user,
-                            onValueChange = { onEvent(AppEvent.UpdateUser(it)) },
-                            label = "User",
-                            placeholder = "root",
-                            icon = null,
-                            enabled = !isConnecting
-                        )
-                    }
+                    ConnectTextField(
+                        value = state.port,
+                        onValueChange = { onEvent(AppEvent.UpdatePort(it)) },
+                        label = "Port",
+                        placeholder = "22",
+                        icon = null,
+                        enabled = !isConnecting,
+                        modifier = Modifier.weight(1f)
+                    )
+                    ConnectTextField(
+                        value = state.user,
+                        onValueChange = { onEvent(AppEvent.UpdateUser(it)) },
+                        label = "User",
+                        placeholder = "root",
+                        icon = null,
+                        enabled = !isConnecting,
+                        modifier = Modifier.weight(1f)
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -133,7 +136,7 @@ fun ConnectScreen(
                 }
             }
 
-            // Demo Banner
+            // Info Banner
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -166,9 +169,13 @@ private fun ConnectTextField(
     label: String,
     placeholder: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector?,
-    enabled: Boolean
+    enabled: Boolean,
+    modifier: Modifier = Modifier
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
         Text(
             text = label.uppercase(),
             style = LtiTheme.typography.labelSmall,

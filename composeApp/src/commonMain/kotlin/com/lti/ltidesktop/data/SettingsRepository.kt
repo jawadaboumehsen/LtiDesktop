@@ -13,6 +13,7 @@ class SettingsRepository(private val settings: Settings) {
         private const val KEY_FONT_SIZE = "font_size"
         private const val KEY_OPACITY = "ui_opacity"
         private const val KEY_LANGUAGE = "app_language"
+        private const val KEY_DOWNLOAD_PATH = "download_path"
     }
 
     fun getHost(): String = settings.getString(KEY_HOST, "192.168.1.100")
@@ -41,4 +42,10 @@ class SettingsRepository(private val settings: Settings) {
 
     fun isDarkTheme(): Boolean = settings.getBoolean("is_dark_theme", true)
     fun setDarkTheme(isDark: Boolean) = settings.putBoolean("is_dark_theme", isDark)
+
+    fun getDownloadPath(): String = settings.getString(
+        KEY_DOWNLOAD_PATH,
+        System.getProperty("user.home") + java.io.File.separator + "Downloads"
+    )
+    fun setDownloadPath(path: String) = settings.putString(KEY_DOWNLOAD_PATH, path)
 }

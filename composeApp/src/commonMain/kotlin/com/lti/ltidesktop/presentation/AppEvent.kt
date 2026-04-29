@@ -20,6 +20,7 @@ sealed interface AppEvent {
     data class UpdateFontSize(val size: Int) : AppEvent
     data class UpdateOpacity(val opacity: Float) : AppEvent
     data class UpdateLanguage(val language: String) : AppEvent
+    data class UpdateDownloadPath(val path: String) : AppEvent
     object SaveSettings : AppEvent
 
     // File & Action Hub Events

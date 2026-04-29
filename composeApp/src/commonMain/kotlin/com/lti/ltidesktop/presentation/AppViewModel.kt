@@ -28,7 +28,8 @@ class AppViewModel(
                 connectionTimeout = settingsRepository.getTimeout(),
                 fontSize = settingsRepository.getFontSize(),
                 opacity = settingsRepository.getOpacity(),
-                language = settingsRepository.getLanguage()
+                language = settingsRepository.getLanguage(),
+                downloadPath = settingsRepository.getDownloadPath()
             )
         )
     )
@@ -72,6 +73,7 @@ class AppViewModel(
             is AppEvent.UpdateFontSize -> updateSettings { it.copy(fontSize = event.size) }
             is AppEvent.UpdateOpacity -> updateSettings { it.copy(opacity = event.opacity) }
             is AppEvent.UpdateLanguage -> updateSettings { it.copy(language = event.language) }
+            is AppEvent.UpdateDownloadPath -> updateSettings { it.copy(downloadPath = event.path) }
             AppEvent.SaveSettings -> saveSettings()
 
             // File & Action Hub Events
@@ -87,67 +89,192 @@ class AppViewModel(
     }
 
     private fun syncFiles() {
-        val stamp = (1000..9999).random()
-        val newFile = DumpFile(
-            id = "sync_$stamp",
-            name = "sync_$stamp.txt",
-            ext = "txt",
-            size = "${(10..90).random()} KB",
-            time = "just now",
-            path = "/var/log/sync_$stamp.txt",
-            content = "[INFO] sync started\n[OK]   12 files transferred\n[OK]   sync complete · $stamp\n"
-        )
-        _state.update { it.copy(files = listOf(newFile) + it.files) }
+        viewModelScope.launch {
+            val downloadPath = _state.value.settings.downloadPath
+            terminalRepository.addLine("[SYS] Listing files on host...", LineType.SYS)
 
-        val newAction = ActionLog(
-            id = "action_${newFile.id}",
-            title = "Logs synced",
-            meta = "12 files · ${newFile.size}",
-            time = "just now",
-            tone = "info"
-        )
-        _state.update { it.copy(recentActions = listOf(newAction) + it.recentActions) }
+            try {
+                // 1. HTTP GET /files — get real file list from Android dump directory
+                val remoteFiles = apiService.listRemoteFiles()
+
+                if (remoteFiles.isEmpty()) {
+                    terminalRepository.addLine(
+                        "[WARN] No files in dump directory — run 'dump run' from Console first",
+                        LineType.WARN
+                    )
+                    return@launch
+                }
+
+                terminalRepository.addLine(
+                    "[SYS] Found ${remoteFiles.size} file(s): ${remoteFiles.joinToString { it.name }}",
+                    LineType.SYS
+                )
+
+                // 2. Prepare local directory
+                val dir = if (downloadPath.isNotBlank()) java.io.File(downloadPath) else null
+                dir?.mkdirs()
+
+                val newFiles = mutableListOf<DumpFile>()
+                var totalBytes = 0L
+
+                // 3. HTTP GET /files/{name} — download each file as raw ByteArray
+                for (info in remoteFiles) {
+                    terminalRepository.addLine(
+                        "[SYS] Downloading ${info.name} (${info.size / 1024} KB)...",
+                        LineType.SYS
+                    )
+
+                    val bytes = runCatching {
+                        apiService.downloadFile(info.name)
+                    }.getOrElse {
+                        terminalRepository.addLine("[WARN] Failed to download ${info.name}: ${it.message}", LineType.WARN)
+                        null
+                    } ?: continue
+
+                    totalBytes += bytes.size
+
+                    // Save raw bytes to disk
+                    val savedPath = if (dir != null) {
+                        val outFile = java.io.File(dir, info.name)
+                        runCatching { outFile.writeBytes(bytes) }.onFailure {
+                            terminalRepository.addLine("[WARN] Could not save ${info.name}: ${it.message}", LineType.WARN)
+                        }
+                        outFile.absolutePath
+                    } else {
+                        "(in-memory)"
+                    }
+
+                    // For text types, decode for in-app viewing; for .so show a placeholder
+                    val textContent = when (info.ext.lowercase()) {
+                        "hpp", "txt", "json", "log" ->
+                            runCatching { bytes.decodeToString() }.getOrDefault("(binary decode error)")
+                        "so" ->
+                            "// Binary .so file — ${bytes.size} bytes\n// Saved to: $savedPath\n// Use a hex editor or load into analysis tools."
+                        else ->
+                            "(binary — ${bytes.size} bytes)"
+                    }
+
+                    newFiles += DumpFile(
+                        id      = "dl_${info.name}",
+                        name    = info.name,
+                        ext     = info.ext,
+                        size    = "${bytes.size / 1024} KB",
+                        time    = "just now",
+                        path    = savedPath,
+                        content = textContent
+                    )
+                }
+
+                if (newFiles.isEmpty()) {
+                    terminalRepository.addLine("[WARN] Download failed for all files", LineType.WARN)
+                    return@launch
+                }
+
+                val savedMsg = dir?.absolutePath ?: "no path configured — set in Settings"
+                terminalRepository.addLine(
+                    "[OK] Downloaded ${newFiles.size} file(s), ${totalBytes / 1024} KB total → $savedMsg",
+                    LineType.SYS
+                )
+
+                val newAction = ActionLog(
+                    id    = "dl_${System.currentTimeMillis()}",
+                    title = "Dump files downloaded",
+                    meta  = "${newFiles.size} files · ${totalBytes / 1024} KB",
+                    time  = "just now",
+                    tone  = "success"
+                )
+                _state.update { s ->
+                    s.copy(
+                        files         = newFiles + s.files.filter { f -> newFiles.none { n -> n.id == f.id } },
+                        recentActions = listOf(newAction) + s.recentActions
+                    )
+                }
+                _effect.send(AppEffect.ScrollToBottom)
+
+            } catch (e: Exception) {
+                terminalRepository.addLine("[ERR] File sync failed: ${e.message}", LineType.ERROR)
+            }
+        }
     }
 
     private fun executeAction(key: String) {
         viewModelScope.launch {
-            // Simulate processing delay
-            val stamp = (1000..9999).random()
+            when (key) {
+                "dump" -> {
+                    // "Get Dump Files" → real sync via WebSocket
+                    syncFiles()
+                }
+                "reconnect" -> {
+                    // Real reconnect
+                    disconnect()
+                    kotlinx.coroutines.delay(500)
+                    connect()
+                }
+                "diag" -> {
+                    // Real diagnostics via WebSocket
+                    terminalRepository.addLine("[SYS] Running diagnostics...", LineType.SYS)
+                    runCatching {
+                        apiService.execute("sys check") { line ->
+                            terminalRepository.addLine(line, LineType.SYS)
+                        }
+                    }.onFailure {
+                        terminalRepository.addLine("[ERR] Diagnostics failed: ${it.message}", LineType.ERROR)
+                    }
+                    _effect.send(AppEffect.ScrollToBottom)
+                    val action = ActionLog(
+                        id    = "diag_${System.currentTimeMillis()}",
+                        title = "Diagnostics",
+                        meta  = "sys check complete",
+                        time  = "just now",
+                        tone  = "success"
+                    )
+                    _state.update { it.copy(recentActions = listOf(action) + it.recentActions) }
+                }
+                "memdump" -> {
+                    // Step 1: Run dump on server — writes files to /sdcard/UEDumper/ on Android
+                    terminalRepository.addLine("[SYS] Starting memory dump on host...", LineType.SYS)
+                    terminalRepository.addLine("[SYS] Files will be saved to: ${_state.value.settings.downloadPath.ifBlank { "configure in Settings" }}", LineType.SYS)
+                    val dumpSuccess = runCatching {
+                        // Stream live progress lines to console while dump runs
+                        val lines = apiService.execute("dump run") { line ->
+                            terminalRepository.addLine(line, LineType.NORMAL)
+                        }
+                        lines.any { it.contains("[OK]", ignoreCase = true) }
+                    }.getOrElse {
+                        terminalRepository.addLine("[ERR] dump run failed: ${it.message}", LineType.ERROR)
+                        false
+                    }
+                    _effect.send(AppEffect.ScrollToBottom)
 
-            val (title, meta, tone, ext) = when(key) {
-                "dump" -> Quadruple("Dump pulled", "system.hpp · 2.4 MB", "success", "hpp")
-                "memdump" -> Quadruple("Memory captured", "mem_snapshot_$stamp.hpp", "success", "hpp")
-                "diag" -> Quadruple("Diagnostics passed", "all checks ok", "success", "txt")
-                "reboot" -> Quadruple("Host Rebooted", "cold restart complete", "warn", "txt")
-                else -> Quadruple("Action executed", "completed successfully", "info", "txt")
+                    // Step 2: Download produced files from /sdcard/UEDumper/ to PC
+                    if (dumpSuccess) {
+                        terminalRepository.addLine("[SYS] Dump complete — downloading files from host...", LineType.SYS)
+                        syncFiles()
+                    } else {
+                        terminalRepository.addLine("[WARN] Dump may have failed — check 'dump status' in Console", LineType.WARN)
+                    }
+                }
+                "logs" -> {
+                    // Sync logs via WebSocket
+                    terminalRepository.addLine("[SYS] Fetching server logs...", LineType.SYS)
+                    runCatching {
+                        apiService.execute("log show") { line ->
+                            terminalRepository.addLine(line, LineType.NORMAL)
+                        }
+                    }.onFailure {
+                        terminalRepository.addLine("[ERR] Log sync failed: ${it.message}", LineType.ERROR)
+                    }
+                    _effect.send(AppEffect.ScrollToBottom)
+                }
+                else -> {
+                    terminalRepository.addLine("[SYS] Action '$key' has no handler", LineType.WARN)
+                }
             }
-
-            val newFile = DumpFile(
-                id = "f_$stamp",
-                name = if (ext == "hpp") "system_dump_$stamp.hpp" else "trace_$stamp.txt",
-                ext = ext,
-                size = "${(1..4).random()}.${(0..9).random()} MB",
-                time = "just now",
-                path = "/var/dumps/${if (ext == "hpp") "system_dump" else "trace"}_$stamp.$ext",
-                content = "// Captured ${key.uppercase()}\n// ID: $stamp\n#include <cstdint>\n\nnamespace lti::dump {\n  // capture logic for $key\n}\n"
-            )
-
-            val newAction = ActionLog(
-                id = "log_$stamp",
-                title = title,
-                meta = meta,
-                time = "just now",
-                tone = tone
-            )
-
-            _state.update { it.copy(
-                files = listOf(newFile) + it.files,
-                recentActions = listOf(newAction) + it.recentActions
-            ) }
         }
     }
 
-    private data class Quadruple<A, B, C, D>(val first: A, val second: B, val third: C, val fourth: D)
+
+
 
     private fun updateSettings(update: (SettingsState) -> SettingsState) {
         _state.update { it.copy(settings = update(it.settings)) }
@@ -161,7 +288,7 @@ class AppViewModel(
         settingsRepository.setFontSize(s.fontSize)
         settingsRepository.setOpacity(s.opacity)
         settingsRepository.setLanguage(s.language)
-        // Optionally show a toast or feedback
+        settingsRepository.setDownloadPath(s.downloadPath)
     }
 
     private fun updateHost(newHost: String) {

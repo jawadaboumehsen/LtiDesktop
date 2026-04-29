@@ -35,7 +35,8 @@ data class SettingsState(
     val connectionTimeout: Int = 5000,
     val fontSize: Int = 13,
     val opacity: Float = 1.0f,
-    val language: String = "English"
+    val language: String = "English",
+    val downloadPath: String = ""
 )
 
 data class AppState(

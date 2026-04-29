@@ -155,6 +155,38 @@ private fun NetworkPane(state: AppState, onEvent: (AppEvent) -> Unit) {
             }
         )
     }
+    Section(title = "File Downloads", desc = "Where dump files are saved on this machine") {
+        SettingRow(
+            label = "Download Path",
+            hint = "Folder where files from LtiPatcher are stored",
+            control = {
+                androidx.compose.foundation.text.BasicTextField(
+                    value = state.settings.downloadPath,
+                    onValueChange = { onEvent(AppEvent.UpdateDownloadPath(it)); onEvent(AppEvent.SaveSettings) },
+                    singleLine = true,
+                    textStyle = TerminalTypography.copy(fontSize = 12.sp, color = Color.White),
+                    cursorBrush = androidx.compose.ui.graphics.SolidColor(LtiTheme.colors.primary),
+                    decorationBox = { innerTextField ->
+                        Box(
+                            modifier = Modifier
+                                .width(260.dp)
+                                .background(Color(0xFF161616), RoundedCornerShape(4.dp))
+                                .border(1.dp, Color(0xFF1A1A1A), RoundedCornerShape(4.dp))
+                                .padding(horizontal = 12.dp, vertical = 8.dp)
+                        ) {
+                            if (state.settings.downloadPath.isEmpty()) {
+                                Text(
+                                    "e.g. C:\\Users\\You\\Downloads",
+                                    style = TerminalTypography.copy(fontSize = 12.sp, color = Color(0xFF3F3F46))
+                                )
+                            }
+                            innerTextField()
+                        }
+                    }
+                )
+            }
+        )
+    }
 }
 
 @Composable
@@ -217,19 +249,6 @@ private fun SystemPane(onEvent: (AppEvent) -> Unit) {
                     onClick = { onEvent(AppEvent.Disconnect); onEvent(AppEvent.Connect) },
                     icon = Icons.Default.Refresh,
                     isPrimary = false
-                )
-            }
-        )
-        SettingRow(
-            label = "Force Reboot",
-            hint = "Send SIGHUP to remote host",
-            control = {
-                DesktopButton(
-                    text = "REBOOT",
-                    onClick = { /* Reboot */ },
-                    icon = Icons.Default.PowerOff,
-                    isPrimary = false,
-                    modifier = Modifier.border(1.dp, LtiTheme.colors.error.copy(alpha = 0.4f), RoundedCornerShape(4.dp))
                 )
             }
         )

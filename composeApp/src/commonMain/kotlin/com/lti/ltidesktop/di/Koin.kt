@@ -15,7 +15,9 @@ val appModule = module {
     // Infrastructure
     single { 
         HttpClient {
-            install(WebSockets)
+            install(WebSockets) {
+                maxFrameSize = Long.MAX_VALUE
+            }
         }
     }
     single { Settings() }

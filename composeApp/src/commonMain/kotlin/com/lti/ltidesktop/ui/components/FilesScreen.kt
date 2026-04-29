@@ -4,6 +4,7 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
@@ -11,6 +12,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -114,7 +116,7 @@ fun FilesScreen(
                         .background(Color(0xFF0F0F0F), RoundedCornerShape(2.dp))
                         .padding(2.dp)
                 ) {
-                    listOf("all", "hpp", "txt", "json").forEach { filter ->
+                    listOf("all", "hpp", "txt", "json", "so").forEach { filter ->
                         val active = selectedFilter == filter
                         Box(
                             modifier = Modifier
@@ -289,6 +291,10 @@ private fun FileViewer(
     val meta = getExtMeta(file.ext)
     val lines = remember(file.content) { file.content.split("\n") }
     var copied by remember { mutableStateOf(false) }
+    var saved  by remember { mutableStateOf(false) }
+    val clipboardManager = androidx.compose.ui.platform.LocalClipboardManager.current
+    val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
 
     Column(modifier = Modifier.fillMaxSize()) {
         // Toolbar
@@ -326,13 +332,25 @@ private fun FileViewer(
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 DesktopButton(
                     text = if (copied) "COPIED" else "COPY",
-                    onClick = { copied = true }, // Simulated
+                    onClick = {
+                        clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(file.content))
+                        copied = true
+                    },
                     icon = Icons.Default.ContentCopy,
                     isPrimary = false
                 )
                 DesktopButton(
-                    text = "DOWNLOAD",
-                    onClick = { },
+                    text = if (saved) "SAVED" else "DOWNLOAD",
+                    onClick = {
+                        val targetPath = file.path.takeIf { it != "(in-memory)" }
+                            ?: "${System.getProperty("user.home")}/Downloads/${file.name}"
+                        runCatching {
+                            val f = java.io.File(targetPath)
+                            f.parentFile?.mkdirs()
+                            f.writeText(file.content)
+                            saved = true
+                        }
+                    },
                     icon = Icons.Default.FileDownload,
                     isPrimary = false
                 )
@@ -346,14 +364,44 @@ private fun FileViewer(
             }
         }
 
-        // Editor
-        Box(modifier = Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState())) {
-            Column(modifier = Modifier.padding(vertical = 16.dp)) {
-                lines.forEachIndexed { i, line ->
+        // Editor — virtualized with LazyColumn so large files never freeze the UI
+        val maxDisplayLines = 50_000
+        val displayLines = if (lines.size > maxDisplayLines) lines.take(maxDisplayLines) else lines
+        val truncated = lines.size > maxDisplayLines
+
+        Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                if (truncated) {
+                    item {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color(0xFF2A1A00))
+                                .padding(horizontal = 16.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Warning,
+                                null,
+                                tint = Color(0xFFFFD600),
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Text(
+                                "Showing first $maxDisplayLines of ${lines.size} lines — open the saved file directly for full content",
+                                style = TerminalTypography.copy(fontSize = 11.sp, color = Color(0xFFFFD600))
+                            )
+                        }
+                    }
+                }
+                itemsIndexed(displayLines) { i, line ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(24.dp) // Adjusted line height to match 1.65 ratio approx
+                            .height(22.dp)
                     ) {
                         Text(
                             text = "${i + 1}",
@@ -378,6 +426,24 @@ private fun FileViewer(
                             softWrap = false
                         )
                     }
+                }
+            }
+
+            // Scroll to top button — only visible when scrolled past first 50 lines
+            if (listState.firstVisibleItemIndex > 50) {
+                androidx.compose.material3.SmallFloatingActionButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            listState.animateScrollToItem(0)
+                        }
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp),
+                    containerColor = Color(0xFF161616),
+                    contentColor = LtiTheme.colors.primary
+                ) {
+                    Icon(Icons.Default.KeyboardArrowUp, null, modifier = Modifier.size(18.dp))
                 }
             }
         }
@@ -414,10 +480,11 @@ private fun EmptyViewer() {
 private data class FileMeta(val icon: ImageVector, val color: Color)
 
 private fun getExtMeta(ext: String) = when (ext.lowercase()) {
-    "hpp" -> FileMeta(Icons.Default.Code, Color(0xFF00E5FF))
-    "txt" -> FileMeta(Icons.Default.Description, Color(0xFFA1A1AA))
-    "json" -> FileMeta(Icons.Default.SettingsApplications, Color(0xFFFFD600))
-    else -> FileMeta(Icons.AutoMirrored.Filled.InsertDriveFile, Color(0xFFA1A1AA))
+    "hpp"  -> FileMeta(Icons.Default.Code,                      Color(0xFF00E5FF))
+    "txt"  -> FileMeta(Icons.Default.Description,               Color(0xFFA1A1AA))
+    "json" -> FileMeta(Icons.Default.SettingsApplications,      Color(0xFFFFD600))
+    "so"   -> FileMeta(Icons.Default.Memory,                    Color(0xFFB47FFF))
+    else   -> FileMeta(Icons.AutoMirrored.Filled.InsertDriveFile, Color(0xFFA1A1AA))
 }
 
 private fun colorize(line: String, ext: String): androidx.compose.ui.text.AnnotatedString {

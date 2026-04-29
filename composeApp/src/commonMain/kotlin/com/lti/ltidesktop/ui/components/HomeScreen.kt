@@ -124,13 +124,13 @@ fun HomeScreen(
 
             val actions = listOf(
                 ActionData("dump", Icons.Default.Download, "Get Dump Files", "Pull crash + memory dumps from the host", 1800),
-                ActionData("reconnect", Icons.Default.Cable, "Reconnect Session", "Re-establish the SSH tunnel", 1200),
+                ActionData("reconnect", Icons.Default.Cable, "Reconnect Session", "Re-establish the connection", 1200),
                 ActionData("memdump", Icons.Default.Memory, "Capture Memory Snapshot", "Dump RAM regions to .hpp", 2000),
                 ActionData("logs", Icons.Default.Description, "Sync Logs", "Pull /var/log/* to local store", 1500),
                 ActionData("diag", Icons.Default.BugReport, "Run Diagnostics", "Smoke-test the patcher pipeline", 1700),
-                ActionData("reboot", Icons.Default.PowerOff, "Force Reboot Host", "SIGHUP + cold restart", 1300, isDanger = true)
             )
 
+            // Row 1: first 3 tiles
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 actions.take(3).forEach { a ->
                     ActionTile(
@@ -146,6 +146,7 @@ fun HomeScreen(
                     )
                 }
             }
+            // Row 2: remaining 2 tiles (padded to match width)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 actions.drop(3).forEach { a ->
                     ActionTile(
@@ -160,6 +161,8 @@ fun HomeScreen(
                         modifier = Modifier.weight(1f).height(140.dp)
                     )
                 }
+                // Empty spacer to keep left-alignment
+                Spacer(modifier = Modifier.weight(1f))
             }
         }
 

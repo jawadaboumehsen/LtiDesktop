@@ -411,18 +411,29 @@ fun AntigravitySlider(
         value = value,
         onValueChange = onValueChange,
         valueRange = valueRange,
-        modifier = modifier.height(20.dp),
+        modifier = modifier.height(12.dp), // Reduced height
         colors = SliderDefaults.colors(
             thumbColor = LtiTheme.colors.primary,
             activeTrackColor = LtiTheme.colors.primary,
             inactiveTrackColor = Color(0xFF1A1A1A)
         ),
+        track = { sliderState ->
+            SliderDefaults.Track(
+                sliderState = sliderState,
+                modifier = Modifier.height(2.dp), // Thin premium track
+                colors = SliderDefaults.colors(
+                    activeTrackColor = LtiTheme.colors.primary,
+                    inactiveTrackColor = Color(0xFF1A1A1A)
+                ),
+                thumbTrackGapSize = 0.dp
+            )
+        },
         thumb = {
             Box(
                 modifier = Modifier
-                    .size(12.dp)
-                    .background(LtiTheme.colors.primary, RoundedCornerShape(2.dp))
-                    .border(1.dp, Color.Black.copy(alpha = 0.5f), RoundedCornerShape(2.dp))
+                    .size(10.dp) // Slightly smaller thumb
+                    .background(LtiTheme.colors.primary, RoundedCornerShape(1.dp))
+                    .border(1.dp, Color.Black.copy(alpha = 0.5f), RoundedCornerShape(1.dp))
             )
         }
     )

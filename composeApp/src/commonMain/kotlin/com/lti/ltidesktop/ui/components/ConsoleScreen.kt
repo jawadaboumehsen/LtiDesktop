@@ -33,13 +33,17 @@ import com.lti.ltidesktop.ui.theme.TerminalTypography
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
+
 @Composable
 fun ConsoleScreen(
     state: AppState,
     effectFlow: Flow<AppEffect>,
     onEvent: (AppEvent) -> Unit
 ) {
-    var cmdInput by remember { mutableStateOf("") }
+    var cmdInputValue by remember { mutableStateOf(TextFieldValue("")) }
     val focusRequester = remember { FocusRequester() }
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
@@ -53,10 +57,13 @@ fun ConsoleScreen(
                     }
                 }
                 is AppEffect.UpdateInput -> {
-                    cmdInput = effect.text
+                    cmdInputValue = TextFieldValue(
+                        text = effect.text,
+                        selection = TextRange(effect.text.length)
+                    )
                 }
                 is AppEffect.ShowToast -> {
-                    // Ignored for now or implement snackbar
+                    // Ignored for now
                 }
             }
         }
@@ -113,7 +120,7 @@ fun ConsoleScreen(
                 )
             }
 
-            // Terminal Output
+            // Terminal Output (With Selection Support)
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -123,40 +130,42 @@ fun ConsoleScreen(
                         indication = null
                     ) { focusRequester.requestFocus() }
             ) {
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    items(state.outputLines) { line ->
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            // Tag
-                            Text(
-                                text = line.tag,
-                                modifier = Modifier.width(56.dp),
-                                style = TerminalTypography.copy(
-                                    fontSize = 13.sp,
-                                    color = line.displayColor,
-                                    fontWeight = FontWeight.Bold
-                                ),
-                                textAlign = androidx.compose.ui.text.style.TextAlign.End
-                            )
-                            // Message
-                            Text(
-                                text = line.text,
-                                modifier = Modifier.weight(1f),
-                                style = TerminalTypography.copy(
-                                    fontSize = 13.sp,
-                                    color = if (line.isEcho) Color.White else Color(0xFFE4E4E7)
+                SelectionContainer {
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        items(state.outputLines) { line ->
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                // Tag
+                                Text(
+                                    text = line.tag,
+                                    modifier = Modifier.width(56.dp),
+                                    style = TerminalTypography.copy(
+                                        fontSize = 13.sp,
+                                        color = line.displayColor,
+                                        fontWeight = FontWeight.Bold
+                                    ),
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.End
                                 )
-                            )
+                                // Message
+                                Text(
+                                    text = line.text,
+                                    modifier = Modifier.weight(1f),
+                                    style = TerminalTypography.copy(
+                                        fontSize = 13.sp,
+                                        color = if (line.isEcho) Color.White else Color(0xFFE4E4E7)
+                                    )
+                                )
+                            }
                         }
                     }
                 }
             }
 
-            // Input Row
+            // Input Row — key events handled on parent to intercept before BasicTextField
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -168,7 +177,35 @@ fun ConsoleScreen(
                             strokeWidth = 1.dp.toPx()
                         )
                     }
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .onPreviewKeyEvent { keyEvent ->
+                        if (keyEvent.type == KeyEventType.KeyDown) {
+                            when (keyEvent.key) {
+                                Key.Enter, Key.NumPadEnter -> {
+                                    if (cmdInputValue.text.isNotEmpty()) {
+                                        onEvent(AppEvent.SendCommand(cmdInputValue.text))
+                                        cmdInputValue = TextFieldValue("")
+                                    }
+                                    true
+                                }
+                                Key.DirectionUp -> {
+                                    onEvent(AppEvent.HistoryUp(cmdInputValue.text))
+                                    true
+                                }
+                                Key.DirectionDown -> {
+                                    onEvent(AppEvent.HistoryDown(cmdInputValue.text))
+                                    true
+                                }
+                                Key.L -> {
+                                    if (keyEvent.isCtrlPressed) {
+                                        onEvent(AppEvent.ClearOutput)
+                                        true
+                                    } else false
+                                }
+                                else -> false
+                            }
+                        } else false
+                    },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -177,44 +214,17 @@ fun ConsoleScreen(
                     style = TerminalTypography.copy(fontSize = 13.sp, color = LtiTheme.colors.primary, fontWeight = FontWeight.Bold)
                 )
                 BasicTextField(
-                    value = cmdInput,
-                    onValueChange = { cmdInput = it },
+                    value = cmdInputValue,
+                    onValueChange = { cmdInputValue = it },
                     modifier = Modifier
                         .weight(1f)
-                        .focusRequester(focusRequester)
-                        .onKeyEvent {
-                            if (it.type == KeyEventType.KeyDown) {
-                                when (it.key) {
-                                    Key.Enter -> {
-                                        if (cmdInput.isNotEmpty()) {
-                                            onEvent(AppEvent.SendCommand(cmdInput))
-                                            cmdInput = ""
-                                        }
-                                        true
-                                    }
-                                    Key.DirectionUp -> {
-                                        onEvent(AppEvent.HistoryUp(cmdInput))
-                                        true
-                                    }
-                                    Key.DirectionDown -> {
-                                        onEvent(AppEvent.HistoryDown(cmdInput))
-                                        true
-                                    }
-                                    Key.L -> {
-                                        if (it.isCtrlPressed) {
-                                            onEvent(AppEvent.ClearOutput)
-                                            true
-                                        } else false
-                                    }
-                                    else -> false
-                                }
-                            } else false
-                        },
+                        .focusRequester(focusRequester),
+                    singleLine = true,
                     textStyle = TerminalTypography.copy(color = Color.White, fontSize = 13.sp),
                     cursorBrush = SolidColor(LtiTheme.colors.primary),
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
                     decorationBox = { innerTextField ->
-                        if (cmdInput.isEmpty()) {
+                        if (cmdInputValue.text.isEmpty()) {
                             Text(
                                 "type a command (try: ls, status, patch, clear)",
                                 style = TerminalTypography.copy(fontSize = 13.sp, color = Color(0xFF3F3F46))
