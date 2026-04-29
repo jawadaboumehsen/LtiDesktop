@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    LtiPatcher Adaptive Icon Foreground
+    Design: "LTI" circuit-chip monogram — angular PCB-trace letterforms
+    meeting at a central via-node, with an orange pulse dot accent.
+    Colours: White (#FFFFFF) + Neon Orange (#F2994A)
+    Safe-zone: 66×66dp centred in 108×108dp canvas
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- ── L trace ──────────────────────────────────────── -->
+    <!-- Vertical stroke of L -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M28,28 L32,28 L32,68 L28,68 Z" />
+    <!-- Horizontal foot of L -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M28,64 L46,64 L46,68 L28,68 Z" />
+
+    <!-- ── T trace ──────────────────────────────────────── -->
+    <!-- Horizontal top bar of T -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M48,28 L72,28 L72,32 L48,32 Z" />
+    <!-- Vertical stem of T -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M58,28 L62,28 L62,68 L58,68 Z" />
+
+    <!-- ── I trace ──────────────────────────────────────── -->
+    <!-- Top serif of I -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M68,28 L80,28 L80,32 L68,32 Z" />
+    <!-- Stem of I -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M72,28 L76,28 L76,68 L72,68 Z" />
+    <!-- Bottom serif of I -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M68,64 L80,64 L80,68 L68,68 Z" />
+
+    <!-- ── Central via node (intersection accent) ───────── -->
+    <path
+        android:fillColor="#F2994A"
+        android:pathData="M52,46 A6,6 0 1,1 51.999,46 Z" />
+
+    <!-- ── Neon orange pulse dot (top-right corner accent) ── -->
+    <path
+        android:fillColor="#F2994A"
+        android:pathData="M79,29 A5,5 0 1,1 78.999,29 Z" />
+
+    <!-- ── PCB trace — horizontal from via to right edge ── -->
+    <path
+        android:fillColor="#F2994A"
+        android:strokeColor="#F2994A"
+        android:strokeWidth="1.5"
+        android:pathData="M58,48 L80,48" />
+
+    <!-- ── PCB trace — vertical from via downward ────────── -->
+    <path
+        android:fillColor="#F2994A"
+        android:strokeColor="#F2994A"
+        android:strokeWidth="1.5"
+        android:pathData="M54,52 L54,68" />
+
+</vector>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    LtiPatcher Splash Screen Icon
+    Used by windowSplashScreenAnimatedIcon.
+    Larger safe-zone (80×80dp in 108×108dp) — displayed on solid dark background.
+    Colours: White + Neon Orange (#F2994A) + Electric Blue (#4776E6)
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- ── Outer chip border ──────────────────────────────── -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#4776E6"
+        android:strokeWidth="2"
+        android:pathData="M22,30 L22,78 Q22,86 30,86 L78,86 Q86,86 86,78 L86,30 Q86,22 78,22 L30,22 Q22,22 22,30 Z" />
+
+    <!-- Chip pin traces — top -->
+    <path android:fillColor="#4776E6" android:pathData="M38,18 L38,22 L42,22 L42,18 Z" />
+    <path android:fillColor="#4776E6" android:pathData="M50,18 L50,22 L54,22 L54,18 Z" />
+    <path android:fillColor="#4776E6" android:pathData="M62,18 L62,22 L66,22 L66,18 Z" />
+    <!-- Chip pin traces — bottom -->
+    <path android:fillColor="#4776E6" android:pathData="M38,86 L38,90 L42,90 L42,86 Z" />
+    <path android:fillColor="#4776E6" android:pathData="M50,86 L50,90 L54,90 L54,86 Z" />
+    <path android:fillColor="#4776E6" android:pathData="M62,86 L62,90 L66,90 L66,86 Z" />
+    <!-- Chip pin traces — left -->
+    <path android:fillColor="#4776E6" android:pathData="M18,38 L22,38 L22,42 L18,42 Z" />
+    <path android:fillColor="#4776E6" android:pathData="M18,50 L22,50 L22,54 L18,54 Z" />
+    <path android:fillColor="#4776E6" android:pathData="M18,62 L22,62 L22,66 L18,66 Z" />
+    <!-- Chip pin traces — right -->
+    <path android:fillColor="#4776E6" android:pathData="M86,38 L90,38 L90,42 L86,42 Z" />
+    <path android:fillColor="#4776E6" android:pathData="M86,50 L90,50 L90,54 L86,54 Z" />
+    <path android:fillColor="#4776E6" android:pathData="M86,62 L90,62 L90,66 L86,66 Z" />
+
+    <!-- ── L letter ───────────────────────────────────────── -->
+    <path android:fillColor="#FFFFFF" android:pathData="M30,34 L34,34 L34,66 L30,66 Z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M30,62 L44,62 L44,66 L30,66 Z" />
+
+    <!-- ── T letter ───────────────────────────────────────── -->
+    <path android:fillColor="#FFFFFF" android:pathData="M46,34 L66,34 L66,38 L46,38 Z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M54,34 L58,34 L58,66 L54,66 Z" />
+
+    <!-- ── I letter ───────────────────────────────────────── -->
+    <path android:fillColor="#FFFFFF" android:pathData="M66,34 L76,34 L76,38 L66,38 Z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M69,34 L73,34 L73,66 L69,66 Z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M66,62 L76,62 L76,66 L66,66 Z" />
+
+    <!-- ── Central via node ───────────────────────────────── -->
+    <path
+        android:fillColor="#F2994A"
+        android:pathData="M54,48 A5,5 0 1,1 53.999,48 Z" />
+
+    <!-- ── Orange pulse accent corner dot ────────────────── -->
+    <path
+        android:fillColor="#F2994A"
+        android:pathData="M75,35 A4,4 0 1,1 74.999,35 Z" />
+
+    <!-- ── PCB trace accents ──────────────────────────────── -->
+    <path android:strokeColor="#F2994A" android:strokeWidth="1.5"
+        android:pathData="M59,50 L76,50" />
+    <path android:strokeColor="#4776E6" android:strokeWidth="1.5"
+        android:pathData="M30,48 L36,48" />
+    <path android:strokeColor="#4776E6" android:strokeWidth="1.5"
+        android:pathData="M54,68 L54,76" />
+
+</vector>
