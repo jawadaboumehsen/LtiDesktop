@@ -45,16 +45,16 @@ fun SplashScreen(onFinished: () -> Unit) {
         label = "splashScale"
     )
 
-    // Glow radius — expands from near-0 to 1.5× icon radius over 1800ms
+    // Glow radius — expands from near-0 to 1.5× icon radius over 3000ms
     val glowFactor by animateFloatAsState(
         targetValue = if (started) 1.5f else 0.05f,
-        animationSpec = tween(durationMillis = 1800, easing = FastOutSlowInEasing),
+        animationSpec = tween(durationMillis = 3000, easing = FastOutSlowInEasing),
         label = "splashGlow"
     )
 
     LaunchedEffect(Unit) {
         started = true
-        delay(2500)
+        delay(3000)
         onFinished()
     }
 
